@@ -1,0 +1,99 @@
+# select matrix solver based on user input, valid options are:
+# - armadillo
+# - lapack
+# - pardiso
+# - mkl
+# - trilinos_klu
+# - trilinos_superlu
+# - trilinos_umfpack
+# - trilinos_lapack
+set(SKYNET_USE_DENSE_SOLVER FALSE)
+
+if(SKYNET_MATRIX_SOLVER STREQUAL "armadillo")
+  find_package(Armadillo REQUIRED)
+  include_directories(${ARMADILLO_INCLUDE_DIRS})
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${ARMADILLO_LIBRARIES}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_ARMADILLO")
+  set(SKYNET_USE_DENSE_SOLVER TRUE)
+
+elseif(SKYNET_MATRIX_SOLVER STREQUAL "lapack")
+  find_package(LAPACK REQUIRED)
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${LAPACK_LIBRARIES}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_LAPACK")
+  set(SKYNET_USE_DENSE_SOLVER TRUE)
+
+elseif((SKYNET_MATRIX_SOLVER STREQUAL "trilinos_klu") OR
+       (SKYNET_MATRIX_SOLVER STREQUAL "trilinos_umfpack") OR
+       (SKYNET_MATRIX_SOLVER STREQUAL "trilinos_superlu") OR
+       (SKYNET_MATRIX_SOLVER STREQUAL "trilinos_lapack"))
+  find_package(Trilinos REQUIRED)
+
+  # we require Amesos, Epetra and Teuchoscore
+  if((NOT Trilinos_LIBRARY_amesos) AND (NOT Trilinos_LIBRARY_trilinos_amesos))
+    message(FATAL_ERROR "Trilinos does not contain the Amesos package, but it is required.")
+  endif()
+  if((NOT Trilinos_LIBRARY_epetra) AND (NOT Trilinos_LIBRARY_trilinos_epetra))
+    message(FATAL_ERROR "Trilinos does not contain the Epetra package, but it is required.")
+  endif()
+  if((NOT Trilinos_LIBRARY_teuchoscore) AND (NOT Trilinos_LIBRARY_trilinos_teuchoscore))
+    message(FATAL_ERROR "Trilinos does not contain the Teuchoscore package, but it is required.")
+  endif()
+
+  include_directories(${Trilinos_INCLUDE_DIRS})
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Amesos_LIBRARIES}")
+
+  if(SKYNET_MATRIX_SOLVER STREQUAL "trilinos_klu")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_TRILINOS_KLU")
+  elseif(SKYNET_MATRIX_SOLVER STREQUAL "trilinos_umfpack")
+    list(FIND Amesos_TPL_LIST "UMFPACK" pos)
+    if(${pos} EQUAL -1)
+      message(FATAL_ERROR "Requested the Amesos UMFPACK solver, but it is not available.")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_TRILINOS_UMFPACK")
+  elseif(SKYNET_MATRIX_SOLVER STREQUAL "trilinos_superlu")
+    list(FIND Amesos_TPL_LIST "SuperLU" pos)
+    if(${pos} EQUAL -1)
+      message(FATAL_ERROR "Requested the Amesos SuperLU solver, but it is not available.")
+    endif()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_TRILINOS_SUPERLU")
+  elseif(SKYNET_MATRIX_SOLVER STREQUAL "trilinos_lapack")
+    list(FIND Amesos_TPL_LIST "LAPACK" pos)
+    if(${pos} EQUAL -1)
+      message(FATAL_ERROR "Requested the Amesos LAPACK solver, but it is not available.")
+    endif()
+    set(SKYNET_USE_DENSE_SOLVER TRUE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_TRILINOS_LAPACK")
+  endif()
+
+elseif(SKYNET_MATRIX_SOLVER STREQUAL "pardiso")
+  find_package(Pardiso REQUIRED)
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};ifcore")
+  endif()
+  find_package(LAPACK REQUIRED)
+  find_package(BLAS REQUIRED)
+  find_package(OpenMP REQUIRED)
+  find_package(Threads REQUIRED)
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Pardiso_LIBRARIES}")
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${LAPACK_LIBRARIES}")
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${BLAS_LIBRARIES}")
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${OpenMP_CXX_FLAGS}")
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${CMAKE_THREAD_LIBS_INIT}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_PARDISO")
+
+elseif(SKYNET_MATRIX_SOLVER STREQUAL "mkl")
+  find_package(Threads REQUIRED)
+  find_package(MKL REQUIRED)
+  include_directories(${MKL_INCLUDE_DIRS})
+
+  # we link MKL statically so that it will work from within Python
+  link_directories(${MKL_LIBRARY_DIR})
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${MKL_STATIC_LIBRARIES}")
+
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${CMAKE_THREAD_LIBS_INIT}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_MKL")
+
+else()
+  message(FATAL_ERROR
+    "***ERROR*** No SKYNET_MATRIX_SOLVER specified. Please specify -DSKYNET_MATRIX_SOLVER=<solver>, where <solver> can be one of the following: armadillo, lapack, pardiso, mkl, trilinos_klu, trilinos_superlu, trilinos_umfpack, trilinos_lapack")
+endif()

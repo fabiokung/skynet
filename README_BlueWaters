@@ -1,0 +1,14 @@
+# NSCA Blue Waters machine
+#
+# Tested 2017-06-02 by jlippuner@tapir.caltech.edu
+
+module swap PrgEnv-cray PrgEnv-intel
+module load cmake/2.8.10.2
+module load cray-hdf5
+module load gsl
+module load boost
+module load gcc
+
+export CMAKE_PREFIX_PATH=$GSL_DIR:$CMAKE_PREFIX_PATH
+
+CC=icc CXX=icpc Fortan=ifort cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet/install ..

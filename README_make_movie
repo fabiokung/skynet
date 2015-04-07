@@ -1,0 +1,12 @@
+Suppose we have a SkyNet output h5 file in the following path:
+
+/some/path/out.h5
+
+Follow these steps to make a movie:
+
+$ cd /some/path
+$ /path/to/SkyNet/installation/examples/plot_temp_rho_edot.py out.h5
+$ ln -s /path/to/SkyNet/installation/data/logo/SkyNet_logo.png .
+$ mkdir chart_frames
+$ /path/to/SkyNet/installation/examples/movie out.h5
+$ ffmpeg -y -c:v png -i "chart_frames/chart_%06d.png" -pix_fmt yuv420p -c:v libx264 -preset slow -crf 1 "out.mp4"

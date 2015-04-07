@@ -1,0 +1,138 @@
+SKYNET INSTALLATION INSTRUCTIONS
+--------------------------------
+
+SkyNet uses CMake to find the dependencies. If CMake says it cannot find a
+package but it is installed on the system, add the path where the package is
+installed to the CMAKE_PREFIX_PATH environment variable. Multiple paths need to
+be separated by colons.
+
+For example, if you have HDF5 installed in
+
+/some/path/to/hdf5/lib
+/some/path/to/hdf5/include
+
+and SWIG is installed in
+
+/some/custom/swig
+
+then use
+
+export CMAKE_PREFIX_PATH=/some/path/to/hdf5:/some/custom/swig:$CMAKE_PREFIX_PATH
+
+
+
+REQUIREMENTS
+------------
+
+The following programs and libraries are required (usually the
+development packages are needed):
+
+- CMake (>= 2.8.8, http://www.cmake.org)
+- C++ compiler with C++11 support (tested with GCC 4.9)
+- Fortran compiler with Fortran 2003 support (tested with GCC 4.9)
+- HDF5 with C++ support (http://www.hdfgroup.org/HDF5)
+- Git (>= 1.7, http://git-scm.com)
+- GSL (>= 1.16, https://www.gnu.org/software/gsl/)
+- Boost (>~ 1.50, http://www.boost.org/)
+
+
+Additionally, at least one of the following linear solvers is required:
+
+- Armadillo available at http://arma.sourceforge.net or as a Linux package
+  usually under the name libarmadillo-dev
+
+- Pardiso available at http://www.pardiso-project.org, this requires a license,
+  which is free for academic purposes. If Prdiso is used, the following packages
+  are also required:
+  - LAPACK (liblapack-dev)
+  - BLAS (libblas-dev)
+  - OpenMP
+  - Threads
+
+  When using Pardiso, SkyNet looks for any of the following libraries. Please
+  make sure that one of them (or a symlink with that name) exists in a directory
+  where CMake will find it. Add this directory to CMAKE_PREFIX_PATH, if
+  necessary
+  - libpardiso.so
+  - libpardiso500-GNU481-X86-64.so
+  - libpardiso500-INTEL1301-X86-64.so
+
+- Intel MKL available at https://software.intel.com/en-us/intel-mkl, this
+  requires additionally:
+  - Threads
+
+- Trilinos available at https://trilinos.org, the following packages are needed:
+  - Amesos (libtrilinos-amesos-dev)
+  - Epetra (libtrilinos-epetra-dev)
+  - Teuchos (libtrilinos-teuchos-dev)
+
+
+In order to use the SkyNet Python bindings (highly recommended), these packages
+are required:
+
+- SWIG (>= 3.0 http://swig.org)
+- Python (>= 2.7, https://www.python.org)
+
+
+To make movies of the nucleosynthesis evolution, the following are needed:
+
+- FreeType (https://www.freetype.org/)
+- Cairo (https://cairographics.org/)
+- Cairomm (https://www.cairographics.org/cairomm/)
+- SigC++ (http://libsigc.sourceforge.net/)
+- FFmpeg (https://ffmpeg.org/)
+
+
+With a sufficiently modern Linux distribution (tested with Debian testing) that
+uses apt-get, this should install all the dependencies:
+
+$ sudo apt-get install build-essential cmake libhdf5-dev swig3.0 libpython-dev \
+  git libgsl-dev libboost-dev libfreetype6-dev libcairo2-dev                   \
+  libcairomm-1.0-dev libsigc++-2.0-dev ffmpeg
+
+
+
+Installing
+----------
+
+1) create a build directory (this can be anywhere, including inside the source
+   directory)
+   $ mkdir <build_dir>
+
+2) configure SkyNet by running cmake
+   $ cd <build_dir>
+   $ cmake -DSKYNET_MATRIX_SOLVER=<solver> \
+     -DCMAKE_INSTALL_PREFIX=<install_dir> <src_dir>
+
+   where <install_dir> is the path where SkyNet will be installed, this must
+   not be the same as <src_dir>, which is the source directory. <solver> must
+   be one of the following:
+
+   (sparse solvers)
+   - pardiso
+   - mkl
+   - trilinos_klu
+   - trilinos_umfpack
+   - trilinos_superlu
+
+   (dense solvers)
+   - armadillo
+   - lapack
+   - trilinos_lapack
+
+   A sparse solver is recommended for medium (several hundred isotopes) to large
+   (several thousand isotopes) networks. A dense solver should only be used for
+   very small (less than a few hundred isotopes) networks. Of the sparse
+   solvers, SkyNet has been extensively tested with MKL and Pardiso. The
+   Trilinos solvers have only been tested briefly.
+
+3) compile and install SkyNet
+   $ make -j4 install
+
+4) run tests (optional, but recommended, should take less than 5 minutes; note
+   that "make install" MUST be run before running the tests because the tests
+   need data files that are installed by "make install")
+   $ make test
+
+5) to use SkyNet in Python by simply typing "from SkyNet import *"
+   $ echo "export PYTHONPATH=<install_dir>/lib:\$PYTHONPATH" >> ~/.bashrc

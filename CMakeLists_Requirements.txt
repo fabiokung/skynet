@@ -1,0 +1,106 @@
+# GLOBAL REQUIREMENTS
+#
+# These packages are always required
+
+find_package(HDF5 REQUIRED CXX)
+set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${HDF5_LIBRARIES}")
+include_directories(${HDF5_INCLUDE_DIRS})
+
+find_package(GSL REQUIRED)
+set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${GSL_LIBRARIES}")
+include_directories(${GSL_INCLUDES})
+
+# Git (>= 1.7) for git rev-parse --show-toplevel
+find_package(Git 1.7 REQUIRED)
+
+find_package(Boost REQUIRED system filesystem serialization)
+set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Boost_LIBRARIES}")
+include_directories(${Boost_INCLUDE_DIRS})
+
+# SWIG (optional)
+#
+# These packages are required to build the Python bindings with SWIG
+
+if(REQUIRE_SWIG)
+  # REQUIRE_SWIG implies ENABLE_SWIG
+  unset(ENABLE_SWIG CACHE)
+endif()
+
+option(ENABLE_SWIG "Tell cmake to enable support for package SWIG" ON)
+
+if(ENABLE_SWIG)
+  option(REQUIRE_SWIG "Abort the build if SWIG is not found." OFF)
+  find_package(SWIG 3)
+  find_package(PythonLibs 2.6)
+
+  #TODO is there a better way to do this?
+  if(SWIG_FOUND AND PYTHONLIBS_FOUND)
+    set(USE_SWIG TRUE)
+  else()
+    set(USE_SWIG FALSE)
+  endif()
+else()
+  unset(REQUIRE_SWIG CACHE)
+  set(USE_SWIG FALSE)
+endif()
+
+if(REQUIRE_SWIG AND (NOT USE_SWIG))
+  message(FATAL_ERROR "Requested support for SWIG, but SWIG and/or PythonLibs could not be found.")
+endif()
+
+if(USE_SWIG)
+  include(${SWIG_USE_FILE})
+  include_directories(${PYTHON_INCLUDE_DIRS})
+endif()
+
+
+# Movie (optional)
+#
+# To make movies we require these packages
+
+if(REQUIRE_MOVIE)
+  # REQUIRE_MOVIE implies ENABLE_MOVIE
+  unset(ENABLE_MOVIE CACHE)
+endif()
+
+option(ENABLE_MOVIE "Tell cmake to enable support for making movies" ON)
+
+if(ENABLE_MOVIE)
+  option(REQUIRE_MOVIE "Abort the build if packages to make movies are not found." OFF)
+  find_package(Freetype)
+  find_package(Cairo)
+  find_package(SigC++)
+  find_package(Cairomm)
+
+  #TODO is there a better way to do this?
+  if(Freetype_FOUND AND Cairo_FOUND AND SigC++_FOUND AND Cairomm_FOUND)
+    set(USE_MOVIE TRUE)
+  else()
+    set(USE_MOVIE FALSE)
+  endif()
+else()
+  unset(REQUIRE_MOVIE CACHE)
+  set(USE_MOVIE FALSE)
+endif()
+
+if(REQUIRE_MOVIE AND (NOT USE_MOVIE))
+  message(FATAL_ERROR "Requested support for making movies, but the necessary libraries could not be found.")
+endif()
+
+if(USE_MOVIE)
+  include_directories(
+    ${Freetype_INCLUDE_DIRS}/freetype2
+    ${Cairo_INCLUDE_DIRS}
+    ${Cairomm_INCLUDE_DIRS}
+    ${SigC++_INCLUDE_DIRS}
+  )
+
+  set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Cairo_LIBRARIES};${Cairomm_LIBRARIES}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSKYNET_USE_MOVIE")
+endif()
+
+
+# optional modules:
+# - Fortran (?)
+# - documentation
+

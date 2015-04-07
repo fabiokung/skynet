@@ -1,0 +1,18 @@
+# TACC Stampede machine
+#
+# Tested by jlippuner@tapir.caltech.edu on 2017-06-05
+# There is an issue with Boost 1.61, which doesn't work with SkyNet, so use Boost 1.55.
+
+module load git
+module load cmake/2.8.9
+module load gsl/1.16
+module load swig/3.0.12
+module load boost/1.55.0
+module load python/2.7.12
+module load intel/15.0.2
+module load cxx11/4.9.1
+module load hdf5
+
+export CMAKE_PREFIX_PATH=/opt/apps/intel15/gsl/1.16/x86_64:/opt/apps/intel15/boost/1.55.0/x86_64:$CMAKE_PREFIX_PATH
+
+CC=icc CXX=icpc Fortran=ifort cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet_install ..

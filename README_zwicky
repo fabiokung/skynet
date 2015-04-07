@@ -1,0 +1,16 @@
+# Caltech Zwicky cluster
+
+module purge
+. /home/jlippuner/.module_common
+
+export PATH=/home/jlippuner/progs/cmake/install/bin:/home/jlippuner/progs/python_intel/bin:/home/jlippuner/nucleosynthesis/hdf5/install/bin:/home/jlippuner/progs/hdf5/install/bin:$PATH
+export LD_LIBRARY_PATH=/home/jlippuner/progs/python_intel/lib:/home/jlippuner/nucleosynthesis/hdf5/install/lib:/home/jlippuner/progs/lapack/install/lib:/home/jlippuner/progs/boost_1_56_0/lib:$LD_LIBRARY_PATH
+
+export CMAKE_PREFIX_PATH=/home/jlippuner/progs/python_intel:/home/jlippuner/nucleosynthesis/hdf5/install:/home/jlippuner/progs/lapack/install:/home/jlippuner/progs/boost_1_56_0:/home/jlippuner/skynet/install:/home/jlippuner/progs/cairo:$CMAKE_PREFIX_PATH
+
+module add gcc/4.8.1
+module add intel/14.0.2.144
+module add swig/3.0.2
+module add gsl/1.16
+
+cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet/install ..

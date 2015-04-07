@@ -1,0 +1,18 @@
+#!/bin/sh -
+#PBS -l nodes=1:core12
+#PBS -l walltime=2:0:00
+#PBS -A sxs
+#PBS -N SkyNet
+#PBS -o SkyNet.stdout
+#PBS -e SkyNet.stderr
+#PBS -d /home/jlippuner/skynet_example/demo
+#PBS -W umask=0022
+#PBS -S /bin/bash
+
+umask 0022
+
+export OMP_NUM_THREADS=1
+
+. /home/jlippuner/.module_skynet
+
+python /home/jlippuner/skynet_example/demo/parallel_skynet.py

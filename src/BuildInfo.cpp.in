@@ -1,0 +1,61 @@
+/// \file BuildInfo.cpp
+/// \author jlippuner
+/// \since Aug 26, 2014
+///
+/// \brief
+///
+///
+
+#include "BuildInfo.hpp"
+
+#cmakedefine CMAKE_GIT_HASH
+#ifdef CMAKE_GIT_HASH
+#define GIT_HASH "@CMAKE_GIT_HASH@"
+const std::string BuildInfo::GitHash = GIT_HASH;
+#else
+#error "CMAKE_GIT_HASH not defined"
+#endif // CMAKE_GIT_HASH
+
+#cmakedefine01 CMAKE_GIT_CLEAN
+#ifdef CMAKE_GIT_CLEAN
+#define GIT_CLEAN @CMAKE_GIT_CLEAN@
+const bool BuildInfo::GitClean = GIT_CLEAN;
+#else
+#error "CMAKE_GIT_CLEAN not defined"
+#endif // CMAKE_GIT_CLEAN
+
+#cmakedefine CMAKE_BUILD_DATE_TIME
+#ifdef CMAKE_BUILD_DATE_TIME
+#define BUILD_DATE_TIME "@CMAKE_BUILD_DATE_TIME@"
+const std::string BuildInfo::BuildDateTime = BUILD_DATE_TIME;
+#else
+#error "CMAKE_BUILD_DATE_TIME not defined"
+#endif // CMAKE_BUILD_DATE_TIME
+
+#if defined SKYNET_USE_ARMADILLO
+const std::string BuildInfo::MatrixSolver = "armadillo";
+#elif defined SKYNET_USE_PARDISO
+const std::string BuildInfo::MatrixSolver = "pardiso";
+#elif defined SKYNET_USE_CUDA
+const std::string BuildInfo::MatrixSolver = "cuda";
+#elif defined SKYNET_USE_CUDA_55
+const std::string BuildInfo::MatrixSolver = "cuda_55";
+#elif defined SKYNET_USE_MKL
+const std::string BuildInfo::MatrixSolver = "mkl";
+#elif defined SKYNET_USE_PETSC
+const std::string BuildInfo::MatrixSolver = "petsc";
+#elif defined SKYNET_USE_LAPACK
+const std::string BuildInfo::MatrixSolver = "lapack";
+#elif defined SKYNET_USE_TRILINOS_KLU
+const std::string BuildInfo::MatrixSolver = "trilinos_klu";
+#elif defined SKYNET_USE_TRILINOS_SUPERLU
+const std::string BuildInfo::MatrixSolver = "trilinos_superlu";
+#elif defined SKYNET_USE_TRILINOS_UMFPACK
+const std::string BuildInfo::MatrixSolver = "trilinos_umfpack";
+#elif defined SKYNET_USE_TRILINOS_LAPACK
+const std::string BuildInfo::MatrixSolver = "trilinos_lapack";
+#else
+#error "Unkown matrix solver"
+#endif // matrix solver
+
+const std::string SkyNetRoot = "@SKYNET_ROOT@/";
