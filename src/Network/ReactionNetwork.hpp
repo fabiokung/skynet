@@ -85,6 +85,23 @@ public:
     mpExternalHeatingRate = externalHeatingRate.MakeUniquePtr();
   }
 
+  void SetSourceTerms(const std::vector<std::string>& nuclideNames,
+      const std::vector<const FunctionVsTime<double> *>& sourceTermFuncs) {
+    if (nuclideNames.size() != sourceTermFuncs.size())
+      throw std::invalid_argument("Arrays nuclideNames and sourceTermFuncs in "
+          "ReactionNetwork::SetSourceTerms must have equal length.");
+
+    mpSourceTerms.clear();
+    mSourceTermIdxs.resize(nuclideNames.size());
+
+    const auto& idsVsNames = mpNuclideLibrary->NuclideIdsVsNames();
+
+    for (size_t i = 0; i < nuclideNames.size(); ++i) {
+      mpSourceTerms.push_back(sourceTermFuncs[i]->MakeUniquePtr());
+      mSourceTermIdxs[i] = idsVsNames.at(nuclideNames[i]);
+    }
+  }
+
   const NuclideLibrary& GetNuclideLibrary() const {
     return *mpNuclideLibrary;
   }
@@ -240,8 +257,12 @@ private:
 
   void CalculateRates(const double time, const ThermodynamicState thermoState);
 
-  void AddYdotContributions(const std::vector<double>& Y,
+  void AddYdotContributions(const double time, const std::vector<double>& Y,
       std::vector<double> * const pYdot) const;
+
+  void AddWeakYdotContributions(const double time, const std::vector<double>& Y,
+      std::vector<double> * const pYdot) const;
+
 
   void AddJacobianContributions(const std::vector<double>& Y,
       Jacobian * const pJ) const;
@@ -315,6 +336,12 @@ private:
   // Grams per Centimeter^3
   std::unique_ptr<FunctionVsTime<double>> mpT9VsTime;
   std::unique_ptr<FunctionVsTime<double>> mpRhoVsTime;
+
+  // Additional source terms (function vs time) can be defined for any species.
+  // The vector mpSourceTerms contains the source term functions, while the
+  // vector mSourceTermIdxs contains the corresponding nuclide indexes
+  std::vector<std::unique_ptr<FunctionVsTime<double>>> mpSourceTerms;
+  std::vector<int> mSourceTermIdxs;
 
   // possible neutrino history
   std::shared_ptr<NeutrinoHistory> mpNuDistVsTime;

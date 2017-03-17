@@ -19,7 +19,7 @@ namespace { // unnamed so this function can only be used in this file
 
 template<typename T>
 std::vector<T> ReadData(const H5::Group& group, const std::string& name) {
-  auto datSpace = group.openDataSet(name).getSpace();
+  auto datSpace = group.openDataSet(name.c_str()).getSpace();
 
   hsize_t ndim;
   ndim = datSpace.getSimpleExtentNdims();
@@ -32,7 +32,7 @@ std::vector<T> ReadData(const H5::Group& group, const std::string& name) {
     ntot *= dims[i];
 
   std::vector<T> dat(ntot);
-  group.openDataSet(name).read(dat.data(), GetH5DataType<T>());
+  group.openDataSet(name.c_str()).read(dat.data(), GetH5DataType<T>());
 
   return dat;
 }
@@ -41,7 +41,7 @@ std::vector<T> ReadData(const H5::Group& group, const std::string& name) {
 
 FFNEntry::FFNEntry(const H5::H5File& h5File, const std::string& groupName) {
   try {
-    H5::Group group = h5File.openGroup(groupName);
+    H5::Group group = h5File.openGroup(groupName.c_str());
 
     // read in general reaction data
     mParentZs = ReadData<int>(group, "Parent_Z");

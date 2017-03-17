@@ -82,6 +82,8 @@ public:
   std::shared_ptr<NeutrinoHistory> MakeSharedPtr() const {
     return std::shared_ptr<NeutrinoHistory>(new NeutrinoHistoryBlackBody(*this));
   }
+  
+  void PointSource(const bool pointSource){ mPointSource = pointSource;} 
 
   void PrintInfo(NetworkOutput * const pOutput) const;
 
@@ -96,7 +98,7 @@ private:
   mRadiusVsTime(radiusVsTime),
   mT9VsTime(T9VsTime),
   mEtaVsTime(etaVsTime),
-  mLVsTime(lVsTime) {}
+  mLVsTime(lVsTime), mPointSource(false) {}
 
   template<typename T>
   static NeutrinoHistoryBlackBody DoCreateConstant(
@@ -125,6 +127,7 @@ private:
   GeneralPiecewiseLinearFunction<std::valarray<double>> mT9VsTime;
   GeneralPiecewiseLinearFunction<std::valarray<double>> mEtaVsTime;
   GeneralPiecewiseLinearFunction<std::valarray<double>> mLVsTime;
+  bool mPointSource;
 };
 
 template<typename T>

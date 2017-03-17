@@ -31,7 +31,9 @@ std::shared_ptr<NeutrinoDistribution> NeutrinoHistoryBlackBody::operator()(
     // This function returns the integration over solid angle for a distribution
     // function with a minimum mu cutoff normalized by four pi.  This is the
     // expectation for blackbody emitting sphere.
-    if (rnu[i] * rnu[i] <= radius * radius) {
+    if (mPointSource) { 
+      norm[i] = Lnu[i] / (pow(TInMeV[i], 4) * pow(radius, 2) * 4.0 * BBconst);  
+    } else if (rnu[i] * rnu[i] <= radius * radius) {
       norm[i] = 0.5 - 0.5 * sqrt(1.0 - rnu[i] * rnu[i] / (radius * radius));
     } else {
     // Model the neutrino decoupling region with an exponential decrease.

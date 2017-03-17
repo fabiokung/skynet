@@ -40,12 +40,25 @@ public:
       const std::vector<int>& AIn,
       const std::vector<double> times);
 
+
+  ReactionPostProcess(
+      const ReactionLibraryBase* reactionLib,
+      const Screening * const pScreening,
+      const NuclideLibrary& nucLib,
+      const std::string& h5FilePath,
+      std::shared_ptr<NeutrinoHistory> nuHist
+        = std::shared_ptr<NeutrinoHistory>(new DummyNeutrinoHistory()));
+
+  // There is no guarantee that netOut
+  // contains all of the data required since the abundances are buffered,
+  // so use with care
   ReactionPostProcess(
       const ReactionLibraryBase* reactionLib,
       const Screening * const pScreening,
       const NuclideLibrary& nucLib,
       const NetworkOutput& netOut,
-      std::shared_ptr<NeutrinoHistory> nuHist);
+      std::shared_ptr<NeutrinoHistory> nuHist
+        = std::shared_ptr<NeutrinoHistory>(new DummyNeutrinoHistory()));
 
   std::vector<double> GetTimes() {
     return mTimes;

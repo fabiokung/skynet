@@ -16,6 +16,7 @@
 #include "NuclearData/NuclideLibrary.hpp"
 #include "Reactions/Neutrino.hpp"
 #include "Reactions/NeutrinoReactionLibrary.hpp"
+#include "Reactions/REACLIBReactionLibrary.hpp"
 #include "Network/NetworkOptions.hpp"
 #include "Network/ReactionNetwork.hpp"
 #include "Network/NSEOptions.hpp"
@@ -30,6 +31,8 @@ int main(int, char**) {
 
   FloatingPointExceptions::Enable();
 
+  NetworkOptions opts;
+  
   // Read in EoS table
   HelmholtzEOS helm(SkyNetRoot + "/data/helm_table.dat");
   const double deltaNP = 1.293;
@@ -42,6 +45,60 @@ int main(int, char**) {
       Nuclide(1, 1, -deltaNP, 0.5, partitionFunction, "p")
   };
   NuclideLibrary nuclib(nuclides, "neutron proton");
+  
+  // Test building neutrino interactions from beta decay 
+  {
+    // These are a couple of different ways of building electron captures 
+    // from beta decays
+    
+    //REACLIBReactionLibrary weakReactionLibrary(SkyNetRoot + "/data/reaclib",
+    //    ReactionType::Weak, false, LeptonMode::TreatAllAsDecayExceptLabelEC,
+    //    "Weak reactions", nuclib, opts);
+    // 
+    //std::vector<NeutrinoEntry> nuRates; 
+    //for (int i=0; i<weakReactionLibrary.Reactions().size(); ++i) { 
+    //  std::cout << weakReactionLibrary.Reactions()[i].String() << " " 
+    //      << exp(weakReactionLibrary.RateFittingCoefficients()[0][i]) << std::endl;
+    //  nuRates.push_back(NeutrinoEntry::FromVacuumBetaDecay(
+    //      weakReactionLibrary.Reactions()[i], 
+    //      exp(weakReactionLibrary.RateFittingCoefficients()[0][i]), 
+    //      nuclib, false)); 
+    //  nuRates.push_back(NeutrinoEntry::FromVacuumBetaDecay(
+    //      weakReactionLibrary.Reactions()[i],
+    //      exp(weakReactionLibrary.RateFittingCoefficients()[0][i]), 
+    //      nuclib, true)); 
+    //}
+    //NeutrinoReactionLibrary reactionLib(Neutrino(nuRates, "Test"), 
+    //    "Neutrino Reactions", nuclib, opts, false, false, true);  
+
+    //NeutrinoEntry NDecay = NeutrinoEntry::FromVacuumBetaDecay( 
+    //  Reaction({"n"},{"p"},{1},{1}, true, false, false, "Neutron Decay", nuclib), 
+    //  log(2.0),
+    //  nuclib, false);   
+    //NeutrinoEntry PDecay = NeutrinoEntry::FromVacuumBetaDecay( 
+    //  Reaction({"n"},{"p"},{1},{1}, true, false, false, "Neutron Decay", nuclib), 
+    //  log(2.0),
+    //  nuclib, true);   
+    //NeutrinoReactionLibrary reactionLib(Neutrino({NDecay, PDecay}, "Test"), 
+    //    "Neutrino Reactions", nuclib, opts, false, false, true);  
+    
+    Neutrino nuRates = Neutrino::FromREACLIBDecays(SkyNetRoot + "/data/reaclib", 
+        nuclib, opts);  
+    NeutrinoReactionLibrary reactionLib(nuRates, 
+        "Neutrino Reactions", nuclib, opts, false, false, true);  
+    
+    std::vector<double> yInit { 1.0-1.e-12, 1.e-12 };
+    double TGK = 5.e-1; 
+    double RHOGCC = 1.e1; 
+    opts.MaxDt = 1.0;
+    ReactionNetwork network(nuclib, { &reactionLib }, &helm, opts);
+    std::vector<double> yFinal =
+        network.Evolve(yInit, 0.0, 1222.0, FVT([&TGK] (double) {return TGK;}),
+            FVT([&RHOGCC] (double) {return RHOGCC;}), "SkyNet_output",
+            NSEOptions(), 1.e-10).FinalY();
+    if (fabs(yFinal[0] - 0.25) > 0.01) return 1;
+    opts = NetworkOptions();
+  }
 
   // Read in neutrino reactions and make library
   Neutrino lib(SkyNetRoot + "/data/neutrino_reactions.dat", nuclib);
@@ -52,7 +109,6 @@ int main(int, char**) {
     printf("%s\n", reac.String().c_str());
   }
 
-  NetworkOptions opts;
   NeutrinoReactionLibrary reactionLib(lib, "Neutrino Reactions", nuclib, opts);
 
   // Setup constant background and neutrino conditions

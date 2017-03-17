@@ -43,10 +43,7 @@ void ReactionNetwork::SetupNSEEvolution() {
         this->CalculateRates(time, state);
         std::vector<double> yDot(nseResult.Y().size(), 0.0);
 
-        for (unsigned int i = 0; i < mpReactionLibraries.size(); ++i) {
-          if (mpReactionLibraries[i]->Type() == ReactionType::Weak)
-            mpReactionLibraries[i]->AddYdotContributions(nseResult.Y(), &yDot);
-        }
+        this->AddWeakYdotContributions(time, nseResult.Y(), &yDot);
 
         double YeDot = 0.0;
         for (unsigned int i = 0; i < yDot.size(); ++i)
@@ -77,10 +74,7 @@ void ReactionNetwork::SetupNSEEvolution() {
         this->CalculateRates(time, state);
         std::vector<double> yDot(nseResult.Y().size(), 0.0);
 
-        for (unsigned int i = 0; i < mpReactionLibraries.size(); ++i) {
-          if (mpReactionLibraries[i]->Type() == ReactionType::Weak)
-            mpReactionLibraries[i]->AddYdotContributions(nseResult.Y(), &yDot);
-        }
+        this->AddWeakYdotContributions(time, nseResult.Y(), &yDot);
 
         double YeDot = 0.0;
         for (unsigned int i = 0; i < yDot.size(); ++i)
@@ -300,10 +294,8 @@ void ReactionNetwork::EvolveNSE(const double dtMax) {
       mCurrentY, *mpNuclideLibrary, (*mpNuDistVsTime)(mNseStep.t) );
 
   std::vector<double> yDot(mCurrentY.size(), 0.0);
-  for (unsigned int i = 0; i < mpReactionLibraries.size(); ++i) {
-    if (mpReactionLibraries[i]->Type() == ReactionType::Weak)
-      mpReactionLibraries[i]->AddYdotContributions(mCurrentY, &yDot);
-  }
+  AddWeakYdotContributions(mNseStep.t, mCurrentY, &yDot);
+
   auto heatEntropy = CalculateHeatingRateAndEntropyChangeOrDerivative(
       mNseStep.t, 0.0, mCurrentThermodynamicState.T9(),
       mCurrentThermodynamicState.Rho(), mCurrentY, yDot, true);

@@ -55,17 +55,34 @@ std::function<double(double)> MakeNuCapFunc(const double scaledT,
       };
 }
 
+std::function<double(double)> MakeDecayFunc(const double scaledT,
+    const double eta, const double meScaled, const double scaledQ,
+    const int nuPow, const double scaledWm, const double eScale,
+    const std::function<double(double)> distributionFunction) {
+    return [=] (const double x) {
+        double ae = x / scaledT - eta;
+        if (ae > MAX_EXPONENTIAL)
+          ae = MAX_EXPONENTIAL;
+        ae = exp(ae);
+
+        return x * sqrt(x * x - meScaled * meScaled)
+            * pow((x + scaledQ), nuPow)
+            * (1.0 + x * scaledWm) * ae / (1.0 + ae)
+            * (1.0 - distributionFunction((x - scaledQ) * eScale));
+      };
+}
 } // namespace [unnamed]
 
 NeutrinoReactionLibrary::NeutrinoReactionLibrary(const Neutrino neutrinoLib,
     const std::string& description,
     const NuclideLibrary& nucLib, const NetworkOptions& opts, bool onlyNuCap,
-    bool nuHeating) :
+    bool nuHeating, bool includeBeta) :
     ReactionLibraryBase(ReactionType::Weak, description,
         neutrinoLib.GetSource(), neutrinoLib.GetValidReactions(nucLib),
         nucLib, opts, false),
     mOnlyNuCap(onlyNuCap),
-    mNuHeating(nuHeating) {
+    mNuHeating(nuHeating),
+    mIncludeBeta(includeBeta) {
 
   auto entries = neutrinoLib.Entries();
   std::vector<double> Q, matrixElement, Wm;
@@ -174,24 +191,40 @@ void NeutrinoReactionLibrary::DoCalculateRates(
       try {
         auto eCapFunc = MakeECapFunc(scaledT, eta, meScaled, scaledQ, 2,
             scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
-        ecapInt = integrator.Integrate(eCapFunc, lower_lim,
-            std::numeric_limits<double>::infinity());
+        if (eta > -100.0) 
+          ecapInt = integrator.Integrate(eCapFunc, lower_lim,
+              std::numeric_limits<double>::infinity());
+        if (-mQ[i] > lower_lim && mIncludeBeta) { 
+          auto decayFunc = MakeDecayFunc(scaledT, eta, meScaled, scaledQ, 2,
+              scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+          ecapInt = integrator.Integrate(decayFunc, lower_lim, -scaledQ);
+        }
         if (mNuHeating) {
           auto eCapFunc = MakeECapFunc(scaledT, eta, meScaled, scaledQ, 3,
               scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
-          ecapHeatInt = integrator.Integrate(eCapFunc, lower_lim,
-              std::numeric_limits<double>::infinity());
+          if (eta > -100.0)
+            ecapHeatInt = integrator.Integrate(eCapFunc, lower_lim,
+                std::numeric_limits<double>::infinity());
+          if (-mQ[i] > Constants::ElectronMassInMeV && mIncludeBeta) { 
+            auto BetaFunc = MakeDecayFunc(scaledT, eta, meScaled, scaledQ, 3,
+                scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+            ecapHeatInt += integrator.Integrate(BetaFunc, 
+                Constants::ElectronMassInMeV/eScale,
+                -scaledQ);
+          }
         } else {
           ecapHeatInt = 0.0;
         }
       } catch (int e) {
         ecapInt = 0.0;
         ecapHeatInt = 0.0;
-        std::cerr << "Electron capture integration error " << e << std::endl;
+        std::cerr << "Electron capture integration error " << e <<  
+            Reactions()[i].String() << std::endl;
       } catch (...) {
         ecapInt = 0.0;
         ecapHeatInt = 0.0;
-        std::cerr << "Electron capture integration error " << std::endl;
+        std::cerr << "Electron capture integration error " << 
+            Reactions()[i].String() << std::endl;
       }
       mRates[i] = mMatrixElement[i] * rate_const * ecapInt;
       mHeatingRates[i] = mMatrixElement[i] * heat_const * ecapHeatInt;

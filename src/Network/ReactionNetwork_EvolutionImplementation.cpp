@@ -348,12 +348,34 @@ void ReactionNetwork::CalculateRates(const double time,
   mProfiler.RateCalculation.Stop();
 }
 
-void ReactionNetwork::AddYdotContributions(const std::vector<double>& Y,
-    std::vector<double> * const pYdot) const {
+void ReactionNetwork::AddYdotContributions(const double time,
+    const std::vector<double>& Y, std::vector<double> * const pYdot) const {
   mProfiler.YdotCalculation.Start();
 
   for (auto& lib : mpReactionLibraries)
     lib->AddYdotContributions(Y, pYdot);
+
+  // add source terms
+  for (size_t i = 0; i < mpSourceTerms.size(); ++i) {
+    (*pYdot)[mSourceTermIdxs[i]] += (*mpSourceTerms[i])(time);
+  }
+
+  mProfiler.YdotCalculation.Stop();
+}
+
+void ReactionNetwork::AddWeakYdotContributions(const double time,
+    const std::vector<double>& Y, std::vector<double> * const pYdot) const {
+  mProfiler.YdotCalculation.Start();
+
+  for (auto& lib : mpReactionLibraries) {
+    if (lib->Type() == ReactionType::Weak)
+      lib->AddYdotContributions(Y, pYdot);
+  }
+
+  // add source terms
+  for (size_t i = 0; i < mpSourceTerms.size(); ++i) {
+    (*pYdot)[mSourceTermIdxs[i]] += (*mpSourceTerms[i])(time);
+  }
 
   mProfiler.YdotCalculation.Stop();
 }
@@ -417,7 +439,7 @@ ReactionNetwork::DtStr ReactionNetwork::CalculateFirstDt(
   UpdateRates(mCurrentTime);
   std::vector<double> yDot(mCurrentY.size());
 
-  AddYdotContributions(mCurrentY, &yDot);
+  AddYdotContributions(mCurrentTime, mCurrentY, &yDot);
 
   // find new time step
   DtStr maxYDotByYAndLimitingNuclideName =
@@ -672,6 +694,11 @@ double ReactionNetwork::TakeStep(const double dtInit,
   mPreviousY.swap(mCurrentY);
   mCurrentY.swap(yNew);
 
+  // if there are source terms, they probably don't conserve mass, so
+  // renormalize the mass
+  if (mSourceTermIdxs.size() > 0)
+    RenormalizeMass();
+
   // check whether this was a stuck step
   if ((mCurrentNumberOfFailedTimeSteps == 1)
       && (mpOutput->DtVsTime()[mpOutput->NumEntries() - 1] == dt)) {
@@ -706,7 +733,7 @@ bool ReactionNetwork::TryTakeStep(const double dt,
       return false;
 
     yDotNew = std::vector<double>(pYNew->size(), 0.0);
-    AddYdotContributions(*pYNew, &yDotNew);
+    AddYdotContributions(tTrail, *pYNew, &yDotNew);
 
     std::vector<double> rhs(mCurrentY.size());
     for (unsigned int i = 0; i < rhs.size(); ++i)

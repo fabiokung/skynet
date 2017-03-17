@@ -22,6 +22,9 @@ class NeutrinoEntry {
       const std::vector<int> ParentZs, const std::vector<int> DaughterAs,
       const std::vector<int> DaughterZs, const double Q,
       const double matrixElement, const double Wm=0.0, const bool isNue=true);
+  
+  static NeutrinoEntry FromVacuumBetaDecay(const Reaction& reac, double vacRate, 
+    const NuclideLibrary& nuclib, bool inverse = false); 
 
   Reaction GetReaction(const NuclideLibrary& nuclib) const;
   double GetQ() const { return mQ;}
@@ -35,6 +38,7 @@ class NeutrinoEntry {
   double mMatrixElement;
   double mWm;
   bool mIsNue;
+  static constexpr double mK = 6144.0; // Beta decay timescale constant (see Arcones 2010)
 };
 
 #endif // SKYNET_REACTIONS_NEUTRINOENTRY_HPP_

@@ -14,6 +14,7 @@
 
 #include <H5Cpp.h>
 
+#include "Network/NetworkOptions.hpp"
 #include "NuclearData/NuclideLibrary.hpp"
 #include "Reactions/NeutrinoEntry.hpp"
 #include "Reactions/Reaction.hpp"
@@ -22,7 +23,13 @@ class Neutrino {
  public:
   explicit Neutrino(const std::string& pathToNeutrinoFile,
       const NuclideLibrary& nuclib);
-
+   
+  Neutrino(const std::vector<NeutrinoEntry>& entries, const std::string& source) 
+      : mEntries(entries), mSource(source) {}
+       
+  static Neutrino FromREACLIBDecays(const std::string& REACLIBfile, 
+      const NuclideLibrary& nuclib, NetworkOptions opt);
+  
   std::vector<Reaction> GetValidReactions(
       const NuclideLibrary& nuclib) const;
 

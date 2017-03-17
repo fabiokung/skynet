@@ -31,6 +31,15 @@ ReactionPostProcess::ReactionPostProcess(
     const ReactionLibraryBase* reactionLib,
     const Screening * const pScreening,
     const NuclideLibrary& nucLib,
+    const std::string& h5File,
+    std::shared_ptr<NeutrinoHistory> nuHist) :
+    ReactionPostProcess(reactionLib, pScreening, nucLib,
+    NetworkOutput::ReadFromFile(h5File), nuHist) {}
+
+ReactionPostProcess::ReactionPostProcess(
+    const ReactionLibraryBase* reactionLib,
+    const Screening * const pScreening,
+    const NuclideLibrary& nucLib,
     const NetworkOutput& netOut,
     std::shared_ptr<NeutrinoHistory> nuHist) :
     mpLibrary(reactionLib->MakeUniquePtr()),
@@ -134,15 +143,21 @@ void ReactionPostProcess::CalculateRates(
 
       /// \todo Check that we have the double counting factors correct here
       double rate = mpLibrary->Rates()[r];
-      for (auto& name : reaction.ReactantNames())
-        rate *= yIn[i][specMap.at(name)];
+      for (unsigned int j=0; j < reaction.ReactantNames().size(); ++j)
+        rate *= pow(yIn[i][specMap.at(reaction.ReactantNames()[j])],
+             reaction.NsOfReactants()[j]);
+      //for (auto& name : reaction.ReactantNames())
+      //  rate *= pow(yIn[i][specMap.at(name)], reaction.NsOfReactants()[j]);
       //rate *= yIn[i][mNuclib.NuclideIdsVsNames().at(name)];
       mRates[r][i] = rate;
 
       if (mpLibrary->InverseRates().size() > 0) {
         double invRate = mpLibrary->InverseRates()[r];
-        for (auto& name : reaction.ProductNames())
-          invRate *= yIn[i][specMap.at(name)];
+        for (unsigned int j=0; j < reaction.ProductNames().size(); ++j)
+          rate *= pow(yIn[i][specMap.at(reaction.ProductNames()[j])],
+             reaction.NsOfProducts()[j]);
+        //for (auto& name : reaction.ProductNames())
+        //  invRate *= yIn[i][specMap.at(name)];
         //invRate *= yIn[i][mNuclib.NuclideIdsVsNames().at(name)];
         mInvRates[r][i] = invRate;
       }

@@ -1,0 +1,16 @@
+### Had to update the code to use c strings instead of std::string
+
+#Currently Loaded Modules:
+#  1) Python/2.7.2     3) Stata/15.0.SE    5) GNU/6.2          7) Boost/1.63.0    9) CMake/3.7.2
+#  2) MATLAB/R2014a    4) MKL/11.1         6) OpenMPI/2.0.2    8) GSL/2.4
+
+# CMake doesn't find gsl on its own, find the path to gsl using ldconfig -p | grep gsl and
+# update the cmake path with it
+export CMAKE_PREFIX_PATH=/opt/software/gsl/1.15--GCC-4.4.5/:$CMAKE_PREFIX_PATH
+
+# I had to install my own version of HDF5, you can probably link against it if you have my
+# home directory mounted. Otherwise, download and install hdf5-1.10.1, and add the install
+# location to your cmake prefix path
+export CMAKE_PREFIX_PATH=/mnt/home/robe1024/HDF5/:$CMAKE_PREFIX_PATH
+
+cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet/install ..

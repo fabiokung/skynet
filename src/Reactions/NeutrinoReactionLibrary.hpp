@@ -22,14 +22,14 @@ public:
   NeutrinoReactionLibrary(const Neutrino neutrinoLib,
       const std::string& description, const NuclideLibrary& nuclib,
       const NetworkOptions& opts, bool onlyNuCap = false,
-      bool nuHeating = false);
+      bool nuHeating = false, bool includeBeta = false);
 
   NeutrinoReactionLibrary(const std::string& nuFile,
       const std::string& description, const NuclideLibrary& nuclib,
       const NetworkOptions& opts, bool onlyNuCap = false,
-      bool nuHeating = false) :
+      bool nuHeating = false, bool includeBeta = false) :
       NeutrinoReactionLibrary(Neutrino(nuFile, nuclib), description, nuclib,
-        opts, onlyNuCap, nuHeating) {}
+        opts, onlyNuCap, nuHeating, includeBeta) {}
 
   std::unique_ptr<ReactionLibraryBase> MakeUniquePtr() const {
     return std::unique_ptr<ReactionLibraryBase>(
@@ -87,7 +87,12 @@ private:
   std::vector<double> mHeatingRates;
   std::vector<double> mHeatingInverseRates;
 
-  // Q values are defined in the direction of electron or positron capture
+  // Q values are defined in the direction of neutrino capture
+  // so that E_nu = E_e - Q in both directions
+  // e + A -> B + nu 
+  // E_e + M_A = M_B + E_nu -> Q = E_e - E_nu = M_B - M_A 
+  // which is opposite of the normal way of defining the Q-value 
+  // considering that we are treating e + A -> B + nu as the forward reaction
   ReactionData<double> mQ;   // Reaction Q-values
   ReactionData<double> mMatrixElement; // Reaction matrix elements
   ReactionData<double> mWm;  // "Weak Magnetism" correction energy scale
@@ -95,6 +100,7 @@ private:
   const double mK = 6144.0; // Beta decay timescale constant (see Arcones 2010)
   bool mOnlyNuCap;
   bool mNuHeating;
+  bool mIncludeBeta;
 };
 
 #endif // SKYNET_REACTIONS_NEUTRINOREACTIONLIBRARY_HPP_

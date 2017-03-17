@@ -401,7 +401,7 @@ NetworkOutput::NetworkOutput(const std::string& filePrefix,
     const std::vector<int>& massFractionColumnNuclideIds):
       mIsReadOnly(false),
       mFilePrefix(filePrefix),
-      mFile(filePrefix + ".h5", H5F_ACC_TRUNC),
+      mFile((filePrefix + ".h5").c_str(), H5F_ACC_TRUNC),
       mLogFile(nullptr),
       mDisableStdoutOutput(disableStdoutOutput),
       mMassFractionColumnNamesAndIds(0),
@@ -511,7 +511,7 @@ NetworkOutput::NetworkOutput(const std::string& filePrefix,
 NetworkOutput::NetworkOutput(const std::string& h5FilePath) :
     mIsReadOnly(true),
     mFilePrefix(""),
-    mFile(h5FilePath, H5F_ACC_RDONLY),
+    mFile(h5FilePath.c_str(), H5F_ACC_RDONLY),
     mLogFile(nullptr),
     mDisableStdoutOutput(true),
     mMassFractionColumnNamesAndIds(0),
@@ -531,7 +531,7 @@ NetworkOutput::NetworkOutput(const std::string& h5FilePath) :
   // EtaE was added later, so earlier output files do not contain it
   bool hasEtaE = true;
   try {
-      mFile.openDataSet(mEtaEVsTime.Name());
+      mFile.openDataSet(mEtaEVsTime.Name().c_str());
   } catch(H5::FileIException& err) {
       hasEtaE = false;
   }

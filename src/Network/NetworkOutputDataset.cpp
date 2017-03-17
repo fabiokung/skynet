@@ -98,7 +98,7 @@ void NetworkOutputDataset<T>::InitForWriting(H5::H5File * const pH5File,
   }
   props.setChunk(mRank, chunkDim);
 
-  mH5Dataset = pH5File->createDataSet(mName, mDataType, dataSpace, props);
+  mH5Dataset = pH5File->createDataSet(mName.c_str(), mDataType, dataSpace, props);
 
   AddStringAttribute("Description", mDescription);
   AddStringAttribute("Units", mUnits);
@@ -172,7 +172,7 @@ void NetworkOutputDataset<T>::WriteToFile() {
 
 template<typename T>
 void NetworkOutputDataset<T>::ReadFromFile(const H5::H5File& H5File) {
-  mH5Dataset = H5File.openDataSet(mName);
+  mH5Dataset = H5File.openDataSet(mName.c_str());
   H5::DataSpace dataSpace = mH5Dataset.getSpace();
 
   if (mRank != (std::size_t)dataSpace.getSimpleExtentDims(mDim.data()))
@@ -243,7 +243,7 @@ void NetworkOutputDataset<T>::AddStringAttribute(const std::string& name,
 
   H5::StrType strType(H5::PredType::C_S1, H5T_VARIABLE);
 
-  H5::Attribute attr = mH5Dataset.createAttribute(name, strType, attrDataspace);
+  H5::Attribute attr = mH5Dataset.createAttribute(name.c_str(), strType, attrDataspace);
 
   const char * valueCharPtr = value.c_str();
   attr.write(strType, &valueCharPtr);
@@ -254,7 +254,7 @@ void NetworkOutputDataset<T>::AddStringAttribute(const std::string& name,
 template<typename T>
 std::string NetworkOutputDataset<T>::GetStringAttribute(
     const std::string& name) {
-  H5::Attribute attr = mH5Dataset.openAttribute(name);
+  H5::Attribute attr = mH5Dataset.openAttribute(name.c_str());
 
   hsize_t dim[1];
   H5::DataSpace attrSpace = attr.getSpace();

@@ -18,7 +18,7 @@ FFN::FFN(const std::string& pathToFile, const NuclideLibrary& nuclib) {
 
   mSource = File::MakeAbsolutePath(pathToFile);
 
-  H5::H5File file(pathToFile, H5F_ACC_RDONLY);
+  H5::H5File file(pathToFile.c_str(), H5F_ACC_RDONLY);
 
   // get the names of all the groups containing weak interactions
   std::vector<std::string> groupNames;

@@ -11,6 +11,7 @@ set(Reactions_SOURCES
   Neutrino.cpp 
   NeutrinoEntry.cpp
   NeutrinoReactionLibrary.cpp
+  SpecialReactionLibrary.cpp
   NeutrinoExternalRatesReactionLibrary.cpp
   ReactionPostProcess.cpp
 )
