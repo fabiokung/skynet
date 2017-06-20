@@ -148,10 +148,6 @@ install(DIRECTORY data/
   PATTERN "notes" EXCLUDE
 )
 
-install(DIRECTORY FFN/
-  DESTINATION "${INSTALL_DATA_DIR}"
-)
-
 # make CMake config file
 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")

@@ -18,7 +18,7 @@ int main(int, char**) {
   auto nuclib = NuclideLibrary::CreateFromWebnucleoXML(
       SkyNetRoot + "/data/webnucleo_nuc_v2.0.xml");
 
-  FFN lib("mesa_weak_rates.h5", nuclib);
+  FFN lib(SkyNetRoot + "/data/FFN_mesa_weak_rates.h5", nuclib);
   std::vector<Reaction> reacs = lib.Reactions();
 
   for (auto reac : reacs)

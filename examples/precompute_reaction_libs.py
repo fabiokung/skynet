@@ -17,7 +17,7 @@ opts.DisableStdoutOutput = True
 out = NetworkOutput.CreateNew("precompute_reaction_libs", nuclib, False)
 
 ffnMesaReactionLibrary = FFNReactionLibrary(
-    SkyNetRoot + "/data/mesa_weak_rates.h5",
+    SkyNetRoot + "/data/FFN_mesa_weak_rates.h5",
     ReactionType.Weak, "Weak MESA reactions", nuclib, opts, True)
 print("Loaded FFN MESA library")
 
@@ -25,7 +25,7 @@ ffnMesaReactionLibrary.Dump("ffnMesa")
 print("Dumped FFN MESA library")
 
 ffnReactionLibrary = FFNReactionLibrary(
-    SkyNetRoot + "/data/REACLIB_to_FFN_full_rates.h5",
+    SkyNetRoot + "/data/FFN_full_weak_rates.h5",
     ReactionType.Weak, "Weak FFN reactions", nuclib, opts, True)
 print("Loaded FFN library")
 
