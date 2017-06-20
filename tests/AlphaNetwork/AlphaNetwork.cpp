@@ -79,7 +79,7 @@ int main(int, char**) {
     maxError = std::max(maxError, error);
   }
 
-  if (maxError < 1.0E-3)
+  if (maxError < 5.0E-2)
     return EXIT_SUCCESS;
   else
     return EXIT_FAILURE;
