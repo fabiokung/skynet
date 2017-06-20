@@ -13,7 +13,7 @@
    height="307.5"
    id="svg2"
    version="1.1"
-   inkscape:version="0.48.5 r10040"
+   inkscape:version="0.92.1 r15371"
    sodipodi:docname="SkyNet_logo.svg">
   <defs
      id="defs4">
@@ -82,7 +82,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="399.07386"
+     inkscape:cx="210.04238"
      inkscape:cy="145.45013"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -91,7 +91,7 @@
      inkscape:snap-bbox="false"
      inkscape:snap-global="true"
      inkscape:window-width="1920"
-     inkscape:window-height="1027"
+     inkscape:window-height="1020"
      inkscape:window-x="1920"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -106,8 +106,10 @@
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       originx="-4.9999999px"
-       originy="-750px" />
+       originx="-4.9999999"
+       originy="-750"
+       spacingx="1"
+       spacingy="1" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -117,7 +119,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -128,91 +130,80 @@
      transform="translate(-4.9999999,5.137814)">
     <text
        xml:space="preserve"
-       style="font-size:62.4908905px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        x="86.49749"
        y="275.72086"
        id="text3866"
-       sodipodi:linespacing="125%"
        transform="scale(1.1264232,0.8877658)"><tspan
          sodipodi:role="line"
          id="tspan3868"
          x="86.49749"
          y="275.72086"
-         style="font-size:72px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:VL PGothic;-inkscape-font-specification:VL PGothic" /></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:72px;line-height:1.25;font-family:'VL PGothic';-inkscape-font-specification:'VL PGothic'"> </tspan></text>
     <g
-       id="g3893"
-       transform="translate(30,-19.999997)">
+       id="g3878"
+       transform="translate(30.222232,-19.999997)">
       <g
-         id="g3878">
-        <g
-           id="g3855">
-          <path
-             sodipodi:nodetypes="ccccc"
-             inkscape:connector-curvature="0"
-             id="path3840"
-             d="m 0,277.36218 250,0 250,0 L 250,32.362183 z"
-             style="fill:none;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-          <path
-             sodipodi:nodetypes="cccc"
-             inkscape:connector-curvature="0"
-             id="path3842"
-             d="m 170,112.36218 80,77 80,-77 0,0"
-             style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-          <path
-             inkscape:connector-curvature="0"
-             id="path3844"
-             d="m 250,187.36218 0,90 0,0"
-             style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none" />
-        </g>
+         id="g3855">
         <path
-           sodipodi:type="arc"
-           style="fill:#000000;fill-opacity:1;stroke:none"
-           id="path3864"
-           sodipodi:cx="20"
-           sodipodi:cy="102.36218"
-           sodipodi:rx="20"
-           sodipodi:ry="20"
-           d="m 40,102.36218 c 0,11.0457 -8.954305,20 -20,20 -11.045695,0 -20,-8.9543 -20,-20 0,-11.045692 8.954305,-19.999997 20,-19.999997 11.045695,0 20,8.954305 20,19.999997 z"
-           transform="translate(230,-10)" />
-        <text
-           xml:space="preserve"
-           style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-           x="90"
-           y="247.36218"
-           id="text3870"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan3872"
-             x="90"
-             y="247.36218"
-             style="font-size:64px;font-weight:bold;-inkscape-font-specification:Sans Bold">Sky</tspan></text>
-        <text
-           xml:space="preserve"
-           style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
-           x="275"
-           y="247.36218"
-           id="text3874"
-           sodipodi:linespacing="125%"><tspan
-             sodipodi:role="line"
-             id="tspan3876"
-             x="275"
-             y="247.36218"
-             style="font-size:64px;font-weight:bold;-inkscape-font-specification:Sans Bold">Net</tspan></text>
+           style="fill:none;stroke:#000000;stroke-width:15;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="M 0,277.36218 H 250 500 L 250,32.362183 Z"
+           id="path3840"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 170,112.36218 80,77 80,-77 v 0"
+           id="path3842"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="cccc" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="m 250,187.36218 v 90 0"
+           id="path3844"
+           inkscape:connector-curvature="0" />
       </g>
+      <circle
+         r="20"
+         cy="102.36218"
+         cx="20"
+         transform="translate(230,-10)"
+         id="path3864"
+         style="fill:#000000;fill-opacity:1;stroke:none" />
       <text
-         transform="scale(1.1567809,0.86446796)"
-         sodipodi:linespacing="125%"
-         id="text3889"
-         y="356.52222"
-         x="-14.243546"
-         style="font-size:46.27125168px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:4.99866295px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+         id="text3870"
+         y="247.36218"
+         x="90"
+         style="font-style:normal;font-weight:normal;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
          xml:space="preserve"><tspan
-           dx="0"
-           style="font-size:23.13562584px;letter-spacing:4.99866295px"
-           y="356.52222"
-           x="-14.243546"
-           id="tspan3891"
-           sodipodi:role="line">github.com/jlippuner/SkyNet</tspan></text>
+           style="font-weight:bold;font-size:64px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'Sans Bold'"
+           y="247.36218"
+           x="90"
+           id="tspan3872"
+           sodipodi:role="line">Sky</tspan></text>
+      <text
+         id="text3874"
+         y="247.36218"
+         x="275"
+         style="font-style:normal;font-weight:normal;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+         xml:space="preserve"><tspan
+           style="font-weight:bold;font-size:64px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'Sans Bold'"
+           y="247.36218"
+           x="275"
+           id="tspan3876"
+           sodipodi:role="line">Net</tspan></text>
     </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;line-height:0%;font-family:sans-serif;letter-spacing:4.99866295px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       x="9.8222094"
+       y="333.3866"
+       id="text3889"
+       transform="scale(1.1567809,0.86446794)"><tspan
+         sodipodi:role="line"
+         id="tspan3891"
+         x="9.8222094"
+         y="333.3866"
+         style="font-size:23.13562584px;line-height:1.25;font-family:sans-serif;letter-spacing:4px">bitbucket.org/jlippuner/skynet</tspan></text>
   </g>
 </svg>
