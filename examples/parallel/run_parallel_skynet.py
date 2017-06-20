@@ -56,11 +56,10 @@ def run_skynet(args):
     opts.ConvergenceCriterion = NetworkConvergenceCriterion.Mass
     opts.MassDeviationThreshold = 1.0E-10
     opts.IsSelfHeating = True
-    opts.EnableScreening = True
+    opts.EnableScreening = False
     opts.DisableStdoutOutput = True
 
     helm = HelmholtzEOS(SkyNetRoot + "/data/helm_table.dat")
-    screen = SkyNetScreening(nuclib)
 
     strongReactionLibrary = REACLIBReactionLibrary(SkyNetRoot + "/data/reaclib",
       ReactionType.Strong, True, LeptonMode.TreatAllAsDecayExceptLabelEC,
@@ -81,7 +80,7 @@ def run_skynet(args):
       "Weak reactions", nuclib, opts, True)
 
     net = ReactionNetwork(nuclib, [strongReactionLibrary, weakReactionLibrary,
-        symmetricFission, spontaneousFission], helm, screen, opts)
+        symmetricFission, spontaneousFission], helm, None, opts)
 
     # read trajectory file
     trajectory_file = input_dir + outname
