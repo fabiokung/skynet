@@ -466,7 +466,7 @@ NetworkOutput::NetworkOutput(const std::string& filePrefix,
   Log("# Written by Jonas Lippuner and Luke Roberts\n");
   Log("# All rights reserved\n");
   Log("#\n");
-  Log("# SkyNet is free software available at https://github.com/jlippuner/skynet\n");
+  Log("# SkyNet is free software available at https://bitbucket.org/jlippuner/skynet\n");
   Log("# See the LICENSE file in the source code for conditions. There is NO warranty;\n");
   Log("# not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
   Log("#\n");

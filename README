@@ -1,7 +1,7 @@
 SkyNet is a general-purpose nuclear reaction network for nuclear astrophysics
 applications.
 
-SkyNet is available on github: https://github.com/jlippuner/skynet
+SkyNet is available on github: https://bitbucket.org/jlippuner/skynet
 
 The original author and primary maintainer of SkyNet is Jonas Lippuner
 (jonas@lippuner.ca). Luke Roberts (robertsl@nscl.msu.edu) has made
@@ -11,7 +11,7 @@ A detailed methods paper describing SkyNet and the physics it implements has
 been published:
 
     Lippuner, J. and L. F. Roberts (2017), "SkyNet: A modular nuclear reaction
-    network library", in preparation
+    network library", submitted to ApJS, https://arxiv.org/abs/1706.06198
 
 The above paper should be cited in any academic work that uses SkyNet or is
 based on SkyNet.
