@@ -1,10 +1,10 @@
-SkyNet
+SKYNET
 ======
 
 SkyNet is a general-purpose nuclear reaction network for nuclear astrophysics
 applications.
 
-SkyNet is available on github: https://bitbucket.org/jlippuner/skynet
+SkyNet is available at https://bitbucket.org/jlippuner/skynet
 
 The original author and primary maintainer of SkyNet is Jonas Lippuner
 (jonas@lippuner.ca). Luke Roberts (robertsl@nscl.msu.edu) has made
