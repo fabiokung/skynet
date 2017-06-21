@@ -13,8 +13,8 @@ substantial contributions.
 A detailed methods paper describing SkyNet and the physics it implements has
 been published:
 
-> Lippuner, J. and L. F. Roberts (2017), "SkyNet: A modular nuclear reaction
-> network library", submitted to ApJS, https://arxiv.org/abs/1706.06198
+  Lippuner, J. and L. F. Roberts (2017), "SkyNet: A modular nuclear reaction
+  network library", submitted to ApJS, https://arxiv.org/abs/1706.06198
 
 The above paper should be cited in any academic work that uses SkyNet or is
 based on SkyNet.
@@ -61,18 +61,18 @@ is available at http://cococubed.asu.edu/code_pages/eos.shtml (specifically
 http://cococubed.asu.edu/codes/eos/helmholtz.tbz). The Helmhotz EOS has been
 described in:
 
-> Timmes, F. X. and F. D. Swesty (2000), "The Accuracy, Consistency, and Speed
-> of an Electron-Positron Equation of State Based on Table Interpolation of
-> the Helmholtz Free Energy", Astrophysical Journal, Supplement 126, p. 501,
-> doi: 10.1086/313304
+  Timmes, F. X. and F. D. Swesty (2000), "The Accuracy, Consistency, and Speed
+  of an Electron-Positron Equation of State Based on Table Interpolation of
+  the Helmholtz Free Energy", Astrophysical Journal, Supplement 126, p. 501,
+  doi: 10.1086/313304
 
 The X-ray burst trajectory used in the tests was graciously provided by Hendrik
 Schatz. For details, see
 
-> Schatz, H., A. Aprahamian, V. Barnard, L. Bildsten, A. Cumming, M. Ouellette,
-> T. Rauscher, F.-K. Thielemann, and M. Wiescher (2001), "End Point of the rp
-> Process on Accreting Neutron Stars", Physical Review Letters 86, p. 3471.
-> doi: 10.1103/PhysRevLett.86.3471, https://arxiv.org/abs/astro-ph/0102418
+  Schatz, H., A. Aprahamian, V. Barnard, L. Bildsten, A. Cumming, M. Ouellette,
+  T. Rauscher, F.-K. Thielemann, and M. Wiescher (2001), "End Point of the rp
+  Process on Accreting Neutron Stars", Physical Review Letters 86, p. 3471.
+  doi: 10.1103/PhysRevLett.86.3471, https://arxiv.org/abs/astro-ph/0102418
 
 The original development of SkyNet has been funded by the United States National
 Science Foundation (NSF) under the Theoretical and Computational Astrophysics
