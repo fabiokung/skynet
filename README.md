@@ -1,3 +1,6 @@
+SkyNet
+======
+
 SkyNet is a general-purpose nuclear reaction network for nuclear astrophysics
 applications.
 
@@ -19,7 +22,7 @@ based on SkyNet.
 
 
 DOCUMENTATION
--------------
+=============
 
 It should be possible to compile and run SkyNet with any major Linux
 distribution and Mac OS. Microsoft Windows is not supported. See the INSTALL
@@ -35,7 +38,7 @@ tested.
 
 
 LICENSE
--------
+=======
 
 SkyNet is distributed under the Revised BSD 3-Clause License. See the LICENSE
 file for details.
@@ -43,7 +46,7 @@ file for details.
 
 
 ACKNOWLEDGEMENTS
-----------------
+================
 
 SkyNet can read JINA REACLIB database files that contain reaction rate fits for
 various nuclear reactions. A copy of a REACLIB snapshot is distributed with
