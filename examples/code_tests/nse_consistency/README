@@ -1,0 +1,11 @@
+$ ./run_SkyNet.py
+
+# this will take a while, stop it after some time (maybe days)
+$ ./run_SkyNet_no_detailed_balance.py
+
+# edit the variable SKYNET_INSTALL in make_calc_error.sh to point to the SkyNet
+# installation
+$ ./make_calc_error.sh
+
+$ ./calc_error SkyNet.h5 nse_with_screening > error_with_DB
+$ ./calc_error SkyNet_no_detailed_balance.h5 nse_with_screening_no_DB > error_no_DB
