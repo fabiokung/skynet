@@ -89,8 +89,6 @@ def run_skynet(args):
     output = net.Evolve(initY, t0, tfinal, temperature_vs_time, density_vs_time,
         pref)
 
-  NetworkOutput.MakeDatFile(pref + ".h5")
-
 
 if __name__ == '__main__':
   num_cores = multiprocessing.cpu_count()

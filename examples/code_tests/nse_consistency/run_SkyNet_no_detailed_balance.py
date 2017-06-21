@@ -61,5 +61,3 @@ density_vs_time = ConstantFunction(rho)
 
 output = net.Evolve(Y0, 0.0, 1.0e10, temperature_vs_time, density_vs_time,
                     "SkyNet_no_detailed_balance")
-
-NetworkOutput.MakeDatFile("SkyNet_no_detailed_balance.h5")
