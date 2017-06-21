@@ -145,7 +145,7 @@ install(TARGETS SkyNet_static
 
 install(DIRECTORY data/
   DESTINATION "${INSTALL_DATA_DIR}"
-  PATTERN "notes" EXCLUDE
+  USE_SOURCE_PERMISSIONS
 )
 
 # make CMake config file

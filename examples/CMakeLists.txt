@@ -12,11 +12,10 @@ install(FILES ${python_scripts}
 
 install(DIRECTORY parallel/
   DESTINATION "${INSTALL_EXAMPLES_DIR}/parallel"
+  USE_SOURCE_PERMISSIONS
 )
 
-FILE(GLOB parallel_python_scripts "${CMAKE_CURRENT_SOURCE_DIR}/parallel/*.py")
-
-install(FILES ${parallel_python_scripts}
-  DESTINATION "${INSTALL_EXAMPLES_DIR}/parallel"
-  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
+install(DIRECTORY code_tests/
+  DESTINATION "${INSTALL_EXAMPLES_DIR}/code_tests"
+  USE_SOURCE_PERMISSIONS
 )
