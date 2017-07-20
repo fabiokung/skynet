@@ -42,8 +42,8 @@ Additionally, at least one of the following linear solvers is required:
   usually under the name libarmadillo-dev
 
 - Pardiso available at http://www.pardiso-project.org, this requires a license,
-  which is free for academic purposes. If Prdiso is used, the following packages
-  are also required:
+  which is free for academic purposes. If Pardiso is used, the following
+  packages are also required:
   - LAPACK (liblapack-dev)
   - BLAS (libblas-dev)
   - OpenMP
