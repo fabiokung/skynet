@@ -12,6 +12,7 @@
 #include <cmath>
 #include <fstream>
 
+#include "BuildInfo.hpp"
 #include "MovieMaker/ColorScales.hpp"
 
 NucleiChart::NucleiChart(const NetworkOutput& networkOutput,
@@ -167,18 +168,18 @@ void NucleiChart::MakeBackground(const std::string& pathToPlotFile) {
     mBackground.Context()->set_source(plotBackground.Surface(), 0.0, 0.0);
     mBackground.Context()->paint();
     mBackground.Context()->restore();
-
-    // load logo
-    CairoImage logo(0, 0);
-    logo.Surface() = Cairo::ImageSurface::create_from_png(
-        pathToPlotFile + "/SkyNet_logo.png");
-    mBackground.Context()->save();
-    mBackground.Context()->translate(mXOffset / 2.0,
-          mHeight - mChartHeight + mYOffset -5.0 + mPlotHeight);
-    mBackground.Context()->set_source(logo.Surface(), 0.0, 0.0);
-    mBackground.Context()->paint();
-    mBackground.Context()->restore();
   }
+
+  // load logo
+  CairoImage logo(0, 0);
+  logo.Surface() = Cairo::ImageSurface::create_from_png(
+      SkyNetRoot + "/data/logo/SkyNet_logo.png");
+  mBackground.Context()->save();
+  mBackground.Context()->translate(mXOffset / 2.0,
+        mHeight - mChartHeight + mYOffset -5.0 + mPlotHeight);
+  mBackground.Context()->set_source(logo.Surface(), 0.0, 0.0);
+  mBackground.Context()->paint();
+  mBackground.Context()->restore();
 
   mBackground.Context()->translate(mXOffset, mYOffset);
 
