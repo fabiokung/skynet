@@ -13,6 +13,7 @@
 #include <string>
 
 const static std::map<int, std::string> ElementNameVsZ {
+    { 1, "h" },
     { 2, "he" },
     { 3, "li" },
     { 4, "be" },

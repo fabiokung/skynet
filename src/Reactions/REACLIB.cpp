@@ -228,6 +228,14 @@ REACLIBEntry REACLIB::ReadEntry(std::istream& is) const {
 
     // trim leading spaces
     str = str.substr(str.find_first_not_of(" "));
+
+    if (str == "h1")
+      str = "p";
+    else if (str == "h2")
+      str = "d";
+    else if (str == "h3")
+      str = "t";
+
     reactants.push_back(str);
     //printf("%s\n", str.c_str());
   }
@@ -243,6 +251,14 @@ REACLIBEntry REACLIB::ReadEntry(std::istream& is) const {
 
     // trim leading spaces
     str = str.substr(str.find_first_not_of(" "));
+
+    if (str == "h1")
+      str = "p";
+    else if (str == "h2")
+      str = "d";
+    else if (str == "h3")
+      str = "t";
+
     products.push_back(str);
     //printf("%s\n", str.c_str());
   }
