@@ -34,6 +34,29 @@ NetworkOutput NetworkOutput::ReadFromFile(const std::string& h5FilePath) {
   return NetworkOutput(h5FilePath);
 }
 
+std::string NetworkOutput::GetDateTimeStr() {
+  auto now = std::chrono::system_clock::now();
+  auto nowTime_t = std::chrono::system_clock::to_time_t(now);
+  auto local = localtime(&nowTime_t);
+
+  int hour = local->tm_hour;
+  std::string AMPM = (hour < 12 ? "AM" : "PM");
+  hour = hour % 12;
+  if (hour == 0)
+    hour = 12;
+
+  char buf[16];
+  sprintf(buf, "%04i-%02i-%02i", local->tm_year + 1900, local->tm_mon + 1,
+      local->tm_mday);
+  std::string dateStr(buf);
+
+  sprintf(buf, "%02i:%02i:%02i %s", hour, local->tm_min, local->tm_sec,
+      AMPM.c_str());
+  std::string timeStr(buf);
+
+  return dateStr + " @ " + timeStr;
+}
+
 void NetworkOutput::MakeDatFile(const std::string& h5FilePath) {
   std::string outFile = h5FilePath + ".dat";
   FILE * f = fopen(outFile.c_str(), "w");

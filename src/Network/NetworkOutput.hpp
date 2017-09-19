@@ -25,33 +25,6 @@
 
 class NetworkOptions;
 
-namespace { // unnamed so this function can only be used in this file
-
-std::string GetDateTimeStr() {
-  auto now = std::chrono::system_clock::now();
-  auto nowTime_t = std::chrono::system_clock::to_time_t(now);
-  auto local = localtime(&nowTime_t);
-
-  int hour = local->tm_hour;
-  std::string AMPM = (hour < 12 ? "AM" : "PM");
-  hour = hour % 12;
-  if (hour == 0)
-    hour = 12;
-
-  char buf[16];
-  sprintf(buf, "%04i-%02i-%02i", local->tm_year + 1900, local->tm_mon + 1,
-      local->tm_mday);
-  std::string dateStr(buf);
-
-  sprintf(buf, "%02i:%02i:%02i %s", hour, local->tm_min, local->tm_sec,
-      AMPM.c_str());
-  std::string timeStr(buf);
-
-  return dateStr + " @ " + timeStr;
-}
-
-} // namespace [unnamed]
-
 class NetworkOutput {
 public:
   static NetworkOutput CreateNew(const std::string& filePrefix,
@@ -64,6 +37,8 @@ public:
   static NetworkOutput ReadFromFile(const std::string& h5FilePath);
 
   static void MakeDatFile(const std::string& h5FilePath);
+
+  static std::string GetDateTimeStr();
 
   NetworkOutput(const NetworkOutput& other);
 
