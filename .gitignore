@@ -17,4 +17,5 @@ run/
 !CMakeCache.txt
 .cproject
 .project
+.pydevproject
 .settings/
