@@ -27,7 +27,7 @@ REQUIREMENTS
 The following programs and libraries are required (usually the
 development packages are needed):
 
-- CMake (>= 2.8.8, http://www.cmake.org)
+- CMake (>= 3.1, http://www.cmake.org)
 - C++ compiler with C++11 support (tested with GCC 4.9)
 - Fortran compiler with Fortran 2003 support (tested with GCC 4.9)
 - HDF5 with C++ support (http://www.hdfgroup.org/HDF5)

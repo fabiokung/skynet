@@ -1,4 +1,4 @@
- cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 enable_testing()
 
@@ -110,7 +110,7 @@ if(USE_SWIG)
     set_property(SOURCE "src/SkyNet.i" PROPERTY SWIG_FLAGS "-DSKYNET_USE_MOVIE")
   endif()
 
-  SWIG_ADD_MODULE(SkyNet python "src/SkyNet.i")
+  SWIG_ADD_LIBRARY(SkyNet LANGUAGE python SOURCES "src/SkyNet.i")
 
   SWIG_LINK_LIBRARIES(SkyNet
     SkyNet_static
