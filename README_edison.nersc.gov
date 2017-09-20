@@ -1,0 +1,14 @@
+# NERSC Edison cluster
+
+module add PrgEnv-intel
+module add cray-hdf5
+module add gsl
+module add swig
+
+export CMAKE_PREFIX_PATH=/global/homes/j/jlippune/progs/boost:$CMAKE_PREFIX_PATH
+
+export LD_LIBRARY_PATH=/global/homes/j/jlippune/progs/boost:$LD_LIBRARY_PATH
+
+# it seems to be important to list the Intel compilers here, otherwise CMake might
+# pick the wrong compilers
+CXX=icpc CC=icc Fortran=ifort cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet_install ..
