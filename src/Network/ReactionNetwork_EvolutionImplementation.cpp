@@ -367,6 +367,13 @@ void ReactionNetwork::AddJacobianContributions(const std::vector<double>& Y,
 ReactionNetwork::DtStr ReactionNetwork::FindMaxAbsXByYAndLimitingNuclideName(
     const std::vector<double>& x) const {
   std::vector<double> xByY(mCurrentY.size());
+#if defined(__ICC) || defined(__INTEL_COMPILER)
+  // if the Intel compiler vectorizes this loop, it can trigger a
+  // floating point exception when it divides by zero (even though
+  // it would not use the result due to the if statement, the
+  // floating point exception still triggers)
+#pragma novector
+#endif // Intel
   for (unsigned int i = 0; i < xByY.size(); ++i) {
     if (mCurrentY[i] != 0.0) {
       xByY[i] = x[i] / mCurrentY[i];
