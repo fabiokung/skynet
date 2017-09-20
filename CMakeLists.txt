@@ -110,7 +110,11 @@ if(USE_SWIG)
     set_property(SOURCE "src/SkyNet.i" PROPERTY SWIG_FLAGS "-DSKYNET_USE_MOVIE")
   endif()
 
-  SWIG_ADD_LIBRARY(SkyNet LANGUAGE python SOURCES "src/SkyNet.i")
+  if(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 3.8)
+    SWIG_ADD_MODULE(SkyNet python "src/SkyNet.i")
+  else()
+    SWIG_ADD_LIBRARY(SkyNet LANGUAGE python SOURCES "src/SkyNet.i")
+  endif()
 
   SWIG_LINK_LIBRARIES(SkyNet
     SkyNet_static
