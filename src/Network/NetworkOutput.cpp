@@ -551,6 +551,7 @@ NetworkOutput::NetworkOutput(const std::string& h5FilePath) :
   for (unsigned int i = 0; i < names.size(); ++i)
     names[i] = Nuclide::GetName(mZ.Data()[i], mA.Data()[i]);
 
+  // FIXME all nuclear data must be part of the output files
   mpNuclib = std::unique_ptr<NuclideLibrary>(new NuclideLibrary(
       NuclideLibrary::CreateFromWebnucleoXML(SkyNetRoot +
           "/data/webnucleo_nuc_v2.0.xml", names)));

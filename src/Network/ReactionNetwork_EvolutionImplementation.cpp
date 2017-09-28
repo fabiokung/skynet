@@ -514,11 +514,13 @@ HeatEntropy ReactionNetwork::CalculateHeatingRateAndEntropyChangeOrDerivative(
   result.HeatingRate = 0.0;
   result.EntropyChangeOrDerivative = 0.0;
 
+  double TMeV = T9 * Constants::BoltzmannConstantInMeVPerGK;
+
   if ((dtOfLastStep > 0.0) || calculateEntropyDerivative) {
     // calculate heating rate and change in entropy (or entropy derivative),
     // no matter whether the network is self-heating or not
     double constantLogContribution =
-        1.5 * log(pow(rho, 2.0 / 3.0) * Constants::TwoPiHbar2C2NA23 / T9);
+        1.5 * log(pow(rho, 2.0 / 3.0) * Constants::TwoPiHbar2C2NA23 / TMeV);
 
     double sumDYMassExcess = 0.0;
     double sumDYLogTerm = 0.0;
@@ -549,7 +551,6 @@ HeatEntropy ReactionNetwork::CalculateHeatingRateAndEntropyChangeOrDerivative(
       sumDYZ += dY * (double)mpNuclideLibrary->Zs()[i];
     }
 
-    double TMeV = T9 * Constants::BoltzmannConstantInMeVPerGK;
     double gamma = Constants::ElectronMassInMeV / TMeV;
     // entropy change due to electrons
     double dSElectron = (mCurrentThermodynamicState.EtaElectron() + gamma)
