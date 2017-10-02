@@ -65,9 +65,9 @@ int main(int, char**) {
       &symmetricFission, &spontaneousFission }, &helmEOS, &screen, opts);
 
   //auto output = net.EvolveFromNSE(hist, "SkyNet_output");
-  auto output = net.EvolveFromNSE(hist.StartTime(), hist.StartTime() + 1.E-10,
+  auto output = net.EvolveFromNSE(hist.StartTime(), hist.StartTime() + 1.0E-3,
       &hist.TemperatureVsTime(), &hist.DensityVsTime(), hist.Ye(),
-      "SkyNet_output");
+      "SkyNet_output", 2.0E-5);
 
   std::vector<double> finalY = output.FinalY();
 
