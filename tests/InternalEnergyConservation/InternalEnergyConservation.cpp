@@ -27,7 +27,7 @@
 
 int main(int, char**) {
   FloatingPointExceptions::Enable();
-/*
+
   {
     std::array<double, 24> partf;
     partf.fill(0.0);
@@ -144,7 +144,7 @@ int main(int, char**) {
       return EXIT_FAILURE;
     }
   }
-*/
+
   {
     auto nuclib = NuclideLibrary::CreateFromWebnucleoXML(
         SkyNetRoot + "/data/webnucleo_nuc_v2.0.xml");
@@ -205,7 +205,7 @@ int main(int, char**) {
       if (i == 0)
         U0 = outU;
 
-      double thisUError = 2.0 * abs(outU - U0) / abs(outU + U0);
+      double thisUError = 2.0 * abs(outU - U0) / (abs(outU + U0) + 1.0E-20);
       maxUError = std::max(thisUError, maxUError);
     }
 
