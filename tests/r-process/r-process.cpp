@@ -38,6 +38,7 @@ int main(int, char**) {
   opts.SmallestYUsedForErrorCalculation = 1.0E-20;
   opts.MaxDtChangeMultiplier = 2.0;
   opts.MinDt = 1.0E-16;
+  opts.MaxDt = 1.0E-6;
   opts.IsSelfHeating = true;
 
   REACLIBReactionLibrary weakReactionLibrary(SkyNetRoot + "/data/reaclib",
@@ -65,9 +66,9 @@ int main(int, char**) {
       &symmetricFission, &spontaneousFission }, &helmEOS, &screen, opts);
 
   //auto output = net.EvolveFromNSE(hist, "SkyNet_output");
-  auto output = net.EvolveFromNSE(hist.StartTime(), hist.StartTime() + 1.0E-3,
+  auto output = net.EvolveFromNSE(hist.StartTime(), hist.StartTime() + 1.0E-5,
       &hist.TemperatureVsTime(), &hist.DensityVsTime(), hist.Ye(),
-      "SkyNet_output", 2.0E-5);
+      "SkyNet_output", 1.0E-7);
 
   std::vector<double> finalY = output.FinalY();
 
