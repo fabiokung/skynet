@@ -101,7 +101,7 @@ int main(int, char**) {
 
   printf("max fractional error = %.10E\n", maxError);
 
-  if (maxError < 1.0E-8)
+  if (maxError < 3.0E-7)
     return EXIT_SUCCESS;
   else
     return EXIT_FAILURE;

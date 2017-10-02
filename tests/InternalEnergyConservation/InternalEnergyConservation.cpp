@@ -69,7 +69,7 @@ int main(int, char**) {
 
       if (i == 0) U0 = outU;
 
-      double thisUError = 2.0 * abs(outU - U0) / abs(outU + U0);
+      double thisUError = 2.0 * fabs(outU - U0) / fabs(outU + U0);
       maxUError = std::max(thisUError, maxUError);
     }
 
@@ -134,7 +134,7 @@ int main(int, char**) {
 
       if (i == 0) U0 = outU;
 
-      double thisUError = 2.0 * abs(outU - U0) / abs(outU + U0);
+      double thisUError = 2.0 * fabs(outU - U0) / fabs(outU + U0);
       maxUError = std::max(thisUError, maxUError);
     }
 
@@ -205,7 +205,7 @@ int main(int, char**) {
       if (i == 0)
         U0 = outU;
 
-      double thisUError = 2.0 * abs(outU - U0) / (abs(outU + U0) + 1.0E-20);
+      double thisUError = 2.0 * fabs(outU - U0) / fabs(outU + U0);
       maxUError = std::max(thisUError, maxUError);
     }
 
