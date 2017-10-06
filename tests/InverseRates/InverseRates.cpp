@@ -75,22 +75,22 @@ int main(int, char**) {
   printf("Distinct reactions: %lu forward and %lu inverse\n",
       forwardReactions.size(), reverseReactions.size());
 
-  if (forwardLib.NumAllReactions() != 33338) {
+  if (forwardLib.NumAllReactions() != 33130) {
     printf("Wrong number of forward reactions\n");
     return EXIT_FAILURE;
   }
 
-  if (reverseLib.NumAllReactions() != 32995) {
+  if (reverseLib.NumAllReactions() != 32790) {
     printf("Wrong number of reverse reactions\n");
     return EXIT_FAILURE;
   }
 
-  if (forwardReactions.size() != 32822) {
+  if (forwardReactions.size() != 32779) {
     printf("Wrong number of distinct forward reactions\n");
     return EXIT_FAILURE;
   }
 
-  if (reverseReactions.size() != 32479) {
+  if (reverseReactions.size() != 32436) {
     printf("Wrong number of distinct reverse reactions\n");
     return EXIT_FAILURE;
   }
@@ -200,7 +200,7 @@ int main(int, char**) {
 
   printf("ok: %i, bad: %i\n", numOk, numBad);
 
-  if (numBad > 11000)
+  if (numBad > 8500)
     return EXIT_FAILURE;
   else
     return EXIT_SUCCESS;

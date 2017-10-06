@@ -1,0 +1,24 @@
+reaclib_v2.2_ks02 from Hendrik Schatz
+
+../examples/convert_reaclib_v1_to_v2.py reaclib_v2.2_ks02 > reaclib2_v2.2_ks02
+
+# add chapters 9, 10, 11 from latest reaclib
+wget https://groups.nscl.msu.edu/jina/reaclib/db/reaclibs/20171006ReaclibV2.22.gz
+gunzip 20171006ReaclibV2.22.gz
+
+# last reactions in chapter 8 are actually chapter 9, don't copy them
+head reaclib2_v2.2_ks02 -n 320568 > new_reaclib
+
+# copy chapters 9, 10, 11
+tail -n -8904 20171006ReaclibV2.22 >> new_reaclib
+
+# fix bad beta decays
+cd fix_reaclib
+./fix_reaclib.py ../new_reaclib
+cd ..
+
+mv new_reaclib_fixed new_reaclib
+
+sed -i 's/   h1/    p/g' new_reaclib
+sed -i 's/   h2/    d/g' new_reaclib
+sed -i 's/   h3/    t/g' new_reaclib

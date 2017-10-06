@@ -16,7 +16,7 @@
 int main(int, char**) {
   FloatingPointExceptions::Enable();
 
-  if (REACLIB(SkyNetRoot + "/data/reaclib").Entries().size() != 82855)
+  if (REACLIB(SkyNetRoot + "/data/reaclib").Entries().size() != 82368)
     return EXIT_FAILURE;
   else
     return EXIT_SUCCESS;
