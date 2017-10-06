@@ -15,10 +15,10 @@ ExpTMinus3::ExpTMinus3(const double rho0, const double tau):
     mRho0(rho0),
     mTau(tau) {
   if (mRho0 <= 0.0)
-    throw std::invalid_argument("Rho0 for an ExpTMinus3 denisty profile must "
+    throw std::invalid_argument("Rho0 for an ExpTMinus3 density profile must "
         "be positive");
   if (mTau <= 0.0)
-    throw std::invalid_argument("Tau for an ExpTMinus3 denisty profile must "
+    throw std::invalid_argument("Tau for an ExpTMinus3 density profile must "
         "be positive");
 }
 
