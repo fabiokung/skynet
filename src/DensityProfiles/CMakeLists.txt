@@ -2,6 +2,7 @@ set(DensityProfiles_SOURCES
   ConstantFunction.cpp
   ExpTMinus3.cpp
   PowerLawContinuation.cpp
+  Homologous.cpp
 )
 
 add_SkyNet_library(DensityProfiles "${DensityProfiles_SOURCES}")
@@ -13,6 +14,8 @@ set(DensityProfiles_SWIG_DEPS
   ExpTMinus3.hpp
   PowerLawContinuation.i
   PowerLawContinuation.hpp
+  Homologous.i
+  Homologous.hpp
 )
 
 add_SWIG_dependencies("${DensityProfiles_SWIG_DEPS}")

@@ -106,6 +106,7 @@
 %include "DensityProfiles/ConstantFunction.i"
 %include "DensityProfiles/ExpTMinus3.i"
 %include "DensityProfiles/PowerLawContinuation.i"
+%include "DensityProfiles/Homologous.i"
 
 %include "EquationsOfState/HelmholtzEOS.i"
 %include "EquationsOfState/SkyNetScreening.i"
