@@ -15,9 +15,18 @@ add_subdirectory(tinyxml2)
 execute_process(
   COMMAND git rev-parse --show-toplevel
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  RESULT_VARIABLE CMAKE_GIT_RESULT
   OUTPUT_VARIABLE CMAKE_GIT_ROOT
+  ERROR_QUIET
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+if(CMAKE_GIT_RESULT EQUAL 0)
+  set(CMAKE_USE_GIT "true")
+else()
+  set(CMAKE_USE_GIT "false")
+  set(CMAKE_GIT_ROOT "")
+endif()
 
 # this creates MakeBuildInfo.cmake with the correct paths
 configure_file(

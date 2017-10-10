@@ -1,5 +1,6 @@
 set(BUILD_INFO_SRC_DIR "@CMAKE_CURRENT_SOURCE_DIR@")
 set(BUILD_INFO_BIN_DIR "@CMAKE_CURRENT_BINARY_DIR@")
+set(BUILD_INFO_USE_GIT "@CMAKE_USE_GIT@")
 set(BUILD_INFO_GIT_ROOT "@CMAKE_GIT_ROOT@")
 set(SKYNET_ROOT "@SKYNET_ROOT@")
 
@@ -9,6 +10,8 @@ execute_process(
   OUTPUT_VARIABLE CMAKE_BUILD_DATE_TIME
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+if(BUILD_INFO_USE_GIT)
 
 # get the Git hash of HEAD
 execute_process(
@@ -49,6 +52,14 @@ set(CMAKE_GIT_CLEAN "false")
 if((${CMAKE_GIT_UNSTAGED} EQUAL 0) AND (${CMAKE_GIT_UNCOMMITTED} EQUAL 0)
    AND ("${CMAKE_GIT_UNTRACKED}" STREQUAL ""))
   set(CMAKE_GIT_CLEAN "true")
+endif()
+
+else()
+
+# not using git
+set(CMAKE_GIT_HASH "not built from a git repository, you can obtain the latest\\n#               version of this code from the URL above")
+set(CMAKE_GIT_CLEAN "true")
+
 endif()
 
 configure_file(

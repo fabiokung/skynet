@@ -10,9 +10,6 @@ find_package(GSL REQUIRED)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${GSL_LIBRARIES}")
 include_directories(${GSL_INCLUDES})
 
-# Git (>= 1.7) for git rev-parse --show-toplevel
-find_package(Git 1.7 REQUIRED)
-
 find_package(Boost REQUIRED system filesystem serialization)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
