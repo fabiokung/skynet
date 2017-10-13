@@ -7,6 +7,7 @@
 %include <std_string.i>
 %include <std_vector.i>
 %include <std_shared_ptr.i>
+%include "Reactions/ReactionData.i"
 
 // std::array typemaps
 %std_array_typemap(double, 24)
@@ -21,6 +22,7 @@
 #include "NuclearData/Nuclide.hpp"
 #include "Reactions/REACLIBEntry.hpp"
 #include "Reactions/Reaction.hpp"
+#include "Reactions/ReactionData.hpp"
 #include "Reactions/ReactionLibraryBase.hpp"
 #include "EquationsOfState/NeutrinoDistribution.hpp"
 #include "EquationsOfState/NeutrinoDistributionFermiDirac.hpp"
@@ -55,6 +57,8 @@
 %ignore std::vector<REACLIBEntry>::vector(size_type);
 %ignore std::vector<REACLIBEntry>::resize(size_type);
 %template(std_vector_REACLIBEntry) std::vector<REACLIBEntry>;
+
+%template(ReactionData_Reaction) ReactionData<Reaction>;
 
 %ignore std::vector<Reaction>::vector(size_type);
 %ignore std::vector<Reaction>::resize(size_type);
