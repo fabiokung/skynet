@@ -1,0 +1,20 @@
+# Darwin cluster at LANl
+#
+# Tested 2018-01-11 by jlippuner@lanl.gov
+module purge
+
+module load cmake/3.7.1
+module load intel/17.0.0
+module load python/2.7.3
+module load boost/1.59.0
+
+export BOOST_ROOT=/projects/opt/centos7/boost/1.59.0/
+export CMAKE_PREFIX_PATH=$BOOST_ROOT:$CMAKE_PREFIX_PATH
+
+cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet/install ..
+
+# Note: To run SkyNet from Python, need to load the module anaconda/Anaconda2
+# because otherwise Numpy is missing. However, if the Anaconda module is
+# loaded when compiling, an HDF5 linking error occurs because the Anaconda 
+# module provides an HDF5 header file for a more recent version than what
+# is installed on the system.
