@@ -40,8 +40,9 @@ int main(int argc, char** argv) {
   auto out = NetworkOutput::ReadFromFile(h5Path);
 
   double timeStep = 0.02;
-  MovieData movieData(out, std::max(1.0E-3, out.Times()[0]), out.Times()[out.Times().size() - 1],
-      timeStep);
+  double tFinal = out.Times()[out.Times().size() - 1];
+  //double tFinal = 1.0E9;
+  MovieData movieData(out, std::max(1.0E-3, out.Times()[0]), tFinal, timeStep);
   NucleiChart chart(movieData, pColorScale, abundanceScale, rootPath);
 
 //  chart.DrawFrame(0, rootPath, 0);

@@ -10,6 +10,8 @@ import sys
 from scipy.interpolate import interp1d
 import os
 
+matplotlib.style.use('classic')
+
 deltaLogT = 0.02
 
 def make_plot(in_path, out_png_path, out_txt_path):
@@ -93,9 +95,11 @@ def make_plot(in_path, out_png_path, out_txt_path):
 
   ax1.set_xticks([1E-3, 1E-1, 1E1, 1E3, 1E5, 1E7, 1E9])
   ax1.set_xticks([1E-2, 1E0, 1E2, 1E4, 1E6, 1E8], minor=True)
+  ax1.set_xticklabels(["", "", "", "", "", ""], minor=True)
 
   ax2.set_xticks([1E-3, 1E-1, 1E1, 1E3, 1E5, 1E7, 1E9])
   ax2.set_xticks([1E-2, 1E0, 1E2, 1E4, 1E6, 1E8], minor=True)
+  ax2.set_xticklabels(["", "", "", "", "", ""], minor=True)
 
   # Get the x and y data and transform it into pixel coordinates
   x1, y1 = l1[0].get_data()
