@@ -10,6 +10,8 @@
 #include "NuclearData/WinvFileReader.hpp"
 
 #include <fstream>
+#include <iostream> 
+#include <algorithm> 
 
 #include "Utilities/FloatingPointComparison.hpp"
 
@@ -63,16 +65,22 @@ std::unordered_map<std::string, Nuclide> WinvFileReader::GetAllNuclides(
   // now read the names
   int numNuclides = 0;
   std::getline(ifs, line);
-
+  line.erase(std::find_if(line.rbegin(), line.rend(), [](int ch) {
+      return !std::isspace(ch);
+      }).base(), line.end());
+  
   while (line.size() == 5) {
     ++numNuclides;
     std::getline(ifs, line);
+    line.erase(std::find_if(line.rbegin(), line.rend(), [](int ch) {
+        return !std::isspace(ch);
+        }).base(), line.end());
   }
 
   //printf("reading %i nuclides...\n", numNuclides);
   std::unordered_map<std::string, Nuclide> nuclidesMap;
 
-  for (int i = 0; i < numNuclides; ++i) {
+  while(!ifs.eof()) {
     // read first line
     char name[5];
     double A;
@@ -84,7 +92,7 @@ std::unordered_map<std::string, Nuclide> WinvFileReader::GetAllNuclides(
         &massExcess) != 6)
       throw std::invalid_argument("Could not parse first line of nuclide "
           "record: " + line);
-
+    
     if ((double)(Z + N) != A)
       throw std::invalid_argument("Z + N != A");
 
@@ -93,6 +101,7 @@ std::unordered_map<std::string, Nuclide> WinvFileReader::GetAllNuclides(
 
     for (int j = 0; j < 3; ++j) {
       std::getline(ifs, line);
+      if (ifs.eof()) goto endread;
       double * p = partitionFunctionLog10.data() + j * 8;
 
       if (sscanf(line.c_str(), "%lf%lf%lf%lf%lf%lf%lf%lf", p + 0, p + 1, p + 2,
@@ -111,8 +120,7 @@ std::unordered_map<std::string, Nuclide> WinvFileReader::GetAllNuclides(
     // read header line for next nuclide
     std::getline(ifs, line);
   }
-
-  ifs.close();
+  endread: ifs.close();
 
   return nuclidesMap;
 }
