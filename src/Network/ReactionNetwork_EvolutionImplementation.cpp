@@ -722,9 +722,20 @@ bool ReactionNetwork::TryTakeStep(const double dt,
     }
     mProfiler.JacobianCalculation.Stop();
 
-    mProfiler.MatrixInversion.Start();
-    std::vector<double> deltaY = mpMatrixSolver->Solve(mpJacobian.get(), rhs);
-    mProfiler.MatrixInversion.Stop();
+    std::vector<double> deltaY(pYNew->size(), 0.0);
+    try {
+      mProfiler.MatrixInversion.Start();
+      deltaY = mpMatrixSolver->Solve(mpJacobian.get(), rhs);
+      mProfiler.MatrixInversion.Stop();
+    } catch (std::exception& ex) {
+      if (mProfiler.MatrixInversion.IsRunning())
+        mProfiler.MatrixInversion.Stop();
+
+      mpOutput->Log("# Error in matrix solver: %s\n", ex.what());
+      mpOutput->Log("# Renormalizing mass\n");
+      RenormalizeMass();
+      return false;
+    }
 
     for (unsigned int i = 0; i < deltaY.size(); ++i) {
       (*pYNew)[i] -= deltaY[i];

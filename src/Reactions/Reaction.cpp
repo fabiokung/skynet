@@ -109,8 +109,9 @@ Reaction::Reaction(const std::vector<std::string>& reactantNames,
   }
 
   if ((chargeDiff != 0) && !isWeak) {
+    printf("Offending reaction (label %s): %s\n", mLabel.c_str(), ToString().c_str());
     throw std::invalid_argument("Attempted to create non-weak reaction with "
-        "no a charge difference in the nuclides");
+        "a charge difference in the nuclides");
   }
 
   if (chargeDiff == 0) {

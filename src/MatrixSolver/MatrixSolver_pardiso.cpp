@@ -186,6 +186,7 @@ void MatrixSolver_pardiso::RunPardiso(const double * const values,
     FloatingPointExceptions::Enable();
     PardisoCheckError(mError);
   } catch (const std::exception& ex) {
+    printf("Catch in RunPardiso: %s\n", ex.what());
     CleanUp();
     throw ex;
   }
