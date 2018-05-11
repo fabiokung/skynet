@@ -2,10 +2,12 @@
 
 #Currently Loaded Modules:
 #  1) Python/2.7.2     3) Stata/15.0.SE    5) GNU/6.2          7) Boost/1.63.0    9) CMake/3.7.2
-#  2) MATLAB/R2014a    4) MKL/11.1         6) OpenMPI/2.0.2    8) GSL/2.4
+#  2) MATLAB/R2014a    4) MKL/11.2         6) OpenMPI/2.0.2    8) GSL/2.4
 
-# CMake doesn't find gsl on its own 
-export CMAKE_PREFIX_PATH=/opt/software/gsl/1.15--GCC-4.4.5/:$CMAKE_PREFIX_PATH
+# Note: using MKL/11.1 seems to cause memory leaks that cause SkyNets memory footprint to grow drastically.
+
+# CMake doesn't seem to find gsl on its own, so tell it where to look 
+export CMAKE_PREFIX_PATH=/opt/software/gsl/2.4--GCC-6.2/:$CMAKE_PREFIX_PATH
 
 # I had to install my own version of HDF5, you can probably link against it if you have my 
 # home directory mounted. Otherwise, download and install hdf5-1.10.1, and add the install 
