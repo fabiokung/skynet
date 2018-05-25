@@ -72,37 +72,37 @@ Neutrino::Neutrino(const std::string& pathToFile,
   }
 }
 
-Neutrino Neutrino::FromREACLIBDecays(const std::string& REACLIBfile, 
-    const NuclideLibrary& nuclib, NetworkOptions opts) { 
+Neutrino Neutrino::FromREACLIBDecays(const std::string& REACLIBfile,
+    const NuclideLibrary& nuclib, NetworkOptions opts) {
 
   REACLIBReactionLibrary weakReactionLibrary(REACLIBfile,
       ReactionType::Weak, false, LeptonMode::TreatAllAsDecayExceptLabelEC,
-      "REACLIB Weak reactions", nuclib, opts);
-  
-  std::vector<NeutrinoEntry> nuRates; 
-  
-  for (unsigned int i=0; i<weakReactionLibrary.Reactions().size(); ++i) { 
-    std::cout << weakReactionLibrary.Reactions()[i].String() << " " 
+      "REACLIB Weak reactions", nuclib, opts, false);
+
+  std::vector<NeutrinoEntry> nuRates;
+
+  for (unsigned int i=0; i<weakReactionLibrary.Reactions().size(); ++i) {
+    std::cout << weakReactionLibrary.Reactions()[i].String() << " "
         << exp(weakReactionLibrary.RateFittingCoefficients()[0][i]) << std::endl;
-    if (!weakReactionLibrary.RateIsTemperatureDependent()[i]) { 
-      try { // This try statement should prevent any reactions containing 
-            // more than one product and reactant from being added, since 
+    if (!weakReactionLibrary.RateIsTemperatureDependent()[i]) {
+      try { // This try statement should prevent any reactions containing
+            // more than one product and reactant from being added, since
             // FromVacuumBetaDecay throws an error in this case.
-      // Forward rate 
+      // Forward rate
       nuRates.push_back(NeutrinoEntry::FromVacuumBetaDecay(
-          weakReactionLibrary.Reactions()[i], 
-          exp(weakReactionLibrary.RateFittingCoefficients()[0][i]), 
-          nuclib, false)); 
+          weakReactionLibrary.Reactions()[i],
+          exp(weakReactionLibrary.RateFittingCoefficients()[0][i]),
+          nuclib, false));
       // Reverse rate corresponding to beta decay
       nuRates.push_back(NeutrinoEntry::FromVacuumBetaDecay(
           weakReactionLibrary.Reactions()[i],
-          exp(weakReactionLibrary.RateFittingCoefficients()[0][i]), 
-          nuclib, true)); 
-      } catch(...) {} 
+          exp(weakReactionLibrary.RateFittingCoefficients()[0][i]),
+          nuclib, true));
+      } catch(...) {}
     }
   }
 
-  return Neutrino(nuRates, REACLIBfile); 
+  return Neutrino(nuRates, REACLIBfile);
 }
 
 std::vector<Reaction> Neutrino::GetValidReactions(

@@ -9,9 +9,9 @@
 #ifndef SKYNET_REACTIONS_SPECIALREACTIONLIBRARY_HPP_
 #define SKYNET_REACTIONS_SPECIALREACTIONLIBRARY_HPP_
 
-#include <functional> 
+#include <functional>
 #include <vector>
-#include <utility> 
+#include <utility>
 
 #include "Network/NetworkOptions.hpp"
 #include "NuclearData/NuclideLibrary.hpp"
@@ -19,15 +19,15 @@
 #include "Reactions/ReactionLibraryBase.hpp"
 #include "EquationsOfState/EOS.hpp"
 
-typedef std::function<double(double, ThermodynamicState)> RateFunc; 
+typedef std::function<double(double, ThermodynamicState)> RateFunc;
 
 class SpecialReactionLibrary: public ReactionLibraryBase {
 public:
   SpecialReactionLibrary(
       const std::vector< std::pair<Reaction, RateFunc> >& reactions,
-      const ReactionType reacType, 
-      const std::string& description, 
-      const std::string& source, 
+      const ReactionType reacType,
+      const std::string& description,
+      const std::string& source,
       const NuclideLibrary& nucLib,
       const NetworkOptions& opts);
 
@@ -76,7 +76,9 @@ protected:
 
   void DoCalculateRates(const ThermodynamicState thermoState,
       const std::vector<double>& partitionFunctionsWithoutSpinTerms,
-      const double expArgumentCap);
+      const double expArgumentCap, const std::vector<int> * const pZs,
+      const std::vector<double> * const
+          pScreeningChemicalPotentialCorrection);
 
 private:
   std::vector<double> mRates;

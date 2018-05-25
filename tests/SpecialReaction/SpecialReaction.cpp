@@ -49,7 +49,7 @@ int main(int, char**) {
       {std::pair<Reaction, RateFunc>(reacNDecay, rateNDecay)},
       ReactionType::Weak, "test", "Wikipedia", nuclib, opts);
 
-  ReactionNetwork network(nuclib, { &specialLib }, &helm, opts);
+  ReactionNetwork network(nuclib, { &specialLib }, &helm, nullptr, opts);
 
   const double tfin = 2.0;
   const double beta = 0.2;

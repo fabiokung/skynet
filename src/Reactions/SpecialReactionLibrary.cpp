@@ -17,21 +17,21 @@
 
 SpecialReactionLibrary::SpecialReactionLibrary(
     const std::vector< std::pair<Reaction, RateFunc> >& reactions,
-    const ReactionType reacType, 
-    const std::string& description, 
-    const std::string& source, 
+    const ReactionType reacType,
+    const std::string& description,
+    const std::string& source,
     const NuclideLibrary& nucLib,
     const NetworkOptions& opts) :
-    ReactionLibraryBase(reacType, description, source, 
+    ReactionLibraryBase(reacType, description, source,
         [&reactions]{
           std::vector<Reaction> reacs;
-          for (auto& reac : reactions) reacs.push_back(reac.first);  
+          for (auto& reac : reactions) reacs.push_back(reac.first);
           return reacs;
-        }(), nucLib, opts) {
-  std::vector<RateFunc> rateFuncs; 
-  
-  for (auto& reac : reactions) rateFuncs.push_back(reac.second);  
-  mRateFuncs = ReactionData<RateFunc>(rateFuncs); 
+        }(), nucLib, opts, false) {
+  std::vector<RateFunc> rateFuncs;
+
+  for (auto& reac : reactions) rateFuncs.push_back(reac.second);
+  mRateFuncs = ReactionData<RateFunc>(rateFuncs);
 
   mRates = std::vector<double>(NumAllReactions());
   mInverseRates = std::vector<double>();
@@ -51,14 +51,16 @@ void SpecialReactionLibrary::DoLoopOverReactionData(
 void SpecialReactionLibrary::DoCalculateRates(
     const ThermodynamicState thermoState,
     const std::vector<double>& /*partitionFunctionsWithoutSpinTerms*/,
-    const double /*expArgumentCap*/) {
-  
-  double time = 0.0; 
-  for (unsigned int i = 0; i < mRateFuncs.size(); ++i) { 
+    const double /*expArgumentCap*/, const std::vector<int> * const /*pZs*/,
+      const std::vector<double> * const
+          /*pScreeningChemicalPotentialCorrection*/) {
+
+  double time = 0.0;
+  for (unsigned int i = 0; i < mRateFuncs.size(); ++i) {
     mRates[i] = mRateFuncs[i](time, thermoState);
-    //mInverseRates[i] = 0.0; 
-    mHeatingRates[i] = 0.0; 
-    //mHeatingInverseRates[i] = 0.0;  
+    //mInverseRates[i] = 0.0;
+    mHeatingRates[i] = 0.0;
+    //mHeatingInverseRates[i] = 0.0;
   }
 }
 
