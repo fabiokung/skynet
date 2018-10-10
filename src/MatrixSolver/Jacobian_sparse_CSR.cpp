@@ -108,14 +108,11 @@ int Jacobian_sparse_CSR::FindFlatIndex(const int i, const int j) const {
   int startIdx = mRowPtrs[i];
   int endIdx = mRowPtrs[i + 1];
 
-  for (int k = startIdx; k < endIdx; ++k) {
-    int colIdx = mColIdxs[k];
-    if (colIdx == j)
-      return k;
-  }
-
-  throw std::out_of_range("Sparse Jacobian does not contain a non-zero entry "
-      "(" + std::to_string(i) + ", " + std::to_string(j) + ")");
+  auto x = std::lower_bound(mColIdxs.begin()+startIdx, mColIdxs.begin()+endIdx, j);
+  if ((x==mColIdxs.begin()+endIdx) || (*x!=j))
+    throw std::out_of_range("Sparse Jacobian does not contain a non-zero entry "
+        "(" + std::to_string(i) + ", " + std::to_string(j) + ")");
+  return x-mColIdxs.begin();
 }
 
 #endif // defined(SKYNET_USE_PARDISO)
