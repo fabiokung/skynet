@@ -1,17 +1,21 @@
-### Had to update the code to use c strings instead of std::string
+## Had to update the code to use c strings instead of std::string
 
 #Currently Loaded Modules:
-#  1) Python/2.7.2     3) Stata/15.0.SE    5) GNU/6.2          7) Boost/1.63.0    9) CMake/3.7.2
-#  2) MATLAB/R2014a    4) MKL/11.2         6) OpenMPI/2.0.2    8) GSL/2.4
+#  1) GCC/6.4.0-2.28   5) binutils/2.28    9) OpenBLAS/0.2.20                  13) ncurses/6.0      17) GMP/6.1.2
+#  2) OpenMPI/2.1.2    6) zlib/1.2.11     10) FFTW/3.3.7                       14) libreadline/7.0  18) libffi/3.2.1
+#  3) gompi/2018a      7) numactl/2.0.11  11) ScaLAPACK/2.0.2-OpenBLAS-0.2.20  15) Tcl/8.6.8        19) Python/3.6.4
+#  4) GCCcore/6.4.0    8) CMake/3.11.1    12) bzip2/1.0.6                      16) SQLite/3.21.0    20) imkl/2018.1.163
 
 # Note: using MKL/11.1 seems to cause memory leaks that cause SkyNets memory footprint to grow drastically.
 
-# CMake doesn't seem to find gsl on its own, so tell it where to look 
-export CMAKE_PREFIX_PATH=/opt/software/gsl/2.4--GCC-6.2/:$CMAKE_PREFIX_PATH
+# CMake doesn't find many libraries on its own for various reasons, so tell it where to look 
+# I had to install HDF5, boost, and gsl on my own since the cluster versions caused problems
+export CMAKE_PREFIX_PATH=/mnt/research/RobertsGroup/opt/boost_1_67_0/lib/:/mnt/research/RobertsGroup/opt/hdf5-1.10.1/lib/:/opt/software/SWIG/3.0.12-foss-2018a-Python-3.6.4/bin/:/mnt/research/RobertsGroup/opt/gsl-2.5/:/mnt/research/RobertsGroup/opt/boost_1_67_0/:/mnt/research/RobertsGroup/opt/hdf5-1.10.1/:$CMAKE_PREFIX_PATH
 
-# I had to install my own version of HDF5, you can probably link against it if you have my 
-# home directory mounted. Otherwise, download and install hdf5-1.10.1, and add the install 
-# location to your cmake prefix path
-export CMAKE_PREFIX_PATH=/mnt/home/robe1024/HDF5/:$CMAKE_PREFIX_PATH
+# If you are linking against my libraries, you will also need to update your LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/mnt/research/RobertsGroup/opt/hdf5-1.10.1/lib/:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH=/mnt/research/RobertsGroup/opt/gsl-2.5/lib/:$LD_LIBRARY_PATH 
+export LD_LIBRARY_PATH=/mnt/research/RobertsGroup/opt/boost_1_67_0/lib/:$LD_LIBRARY_PATH
 
+# Then things should work as normal 
 cmake -DSKYNET_MATRIX_SOLVER=mkl -DCMAKE_INSTALL_PREFIX=~/skynet/install ..
