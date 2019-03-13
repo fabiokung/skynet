@@ -73,6 +73,8 @@ densityProfile = ExpTMinus3(nseResult.Rho(), tau / 1000.0);
 output = net.EvolveSelfHeatingWithInitialTemperature(nseResult.Y(), 0.0, 1.0E9,
     T0, densityProfile, "SkyNet_r-process_python")
 
+NetworkOutput.MakeDatFile("SkyNet_r-process_python.h5")
+
 YvsA = np.array(output.FinalYVsA())
 A = np.arange(len(YvsA))
 
