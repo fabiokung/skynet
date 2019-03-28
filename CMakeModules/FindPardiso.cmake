@@ -8,7 +8,9 @@ include(LibFindMacros)
 
 # find the library
 find_library(Pardiso_LIBRARY
-  NAMES pardiso pardiso500-GNU481-X86-64 pardiso500-INTEL1301-X86-64
+  NAMES pardiso
+        pardiso600-GNU720-X86-64
+        pardiso600-GNU800-X86-64
 )
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

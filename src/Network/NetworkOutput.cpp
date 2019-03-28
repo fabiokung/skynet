@@ -45,7 +45,7 @@ std::string NetworkOutput::GetDateTimeStr() {
   if (hour == 0)
     hour = 12;
 
-  char buf[16];
+  char buf[64];
   sprintf(buf, "%04i-%02i-%02i", local->tm_year + 1900, local->tm_mon + 1,
       local->tm_mday);
   std::string dateStr(buf);
@@ -458,11 +458,13 @@ NetworkOutput::NetworkOutput(const std::string& filePrefix,
   sprintf(buffer, "%5s%12s%12s%6s%4s%4s%12s%12s%12s%12s", "# num", "time [s]",
       "dt [s]", "limit", "#fl", "#NR", "temp [GK]", "rho [cgs]", "Ye",
       "mass - 1");
+  mColumnHeader = std::string(buffer);
+
   for (unsigned int i = 0; i < mMassFractionColumnNamesAndIds.size(); ++i) {
     std::string str = "X(" + mMassFractionColumnNamesAndIds[i].first + ")";
-    sprintf(buffer, "%s%12s", buffer, str.c_str());
+    sprintf(buffer, "%12s", str.c_str());
+    mColumnHeader += std::string(buffer);
   }
-  mColumnHeader = std::string(buffer);
 
   // write log header
   Log("#\n");

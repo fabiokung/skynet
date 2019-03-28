@@ -94,8 +94,8 @@ int main(int, char**) {
     }
     if (finalY[i] < opts.SmallestYUsedForErrorCalculation)
       continue;
-    double error = fabs(finalY[i] - expectedY[i])
-        / expectedY[i];
+    double error = 2.0 * fabs(finalY[i] - expectedY[i])
+        / (expectedY[i] + finalY[i]);
     maxError = std::max(maxError, error);
   }
 
