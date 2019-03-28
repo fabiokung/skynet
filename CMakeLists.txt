@@ -39,6 +39,12 @@ if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel") OR ("${CMAKE_Fortran_COMPILER_I
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -shared-intel")
 endif ()
 
+# force inline of functions marked for inline even if Intel thinks they're
+# too big
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -no-inline-max-size -no-inline-max-total-size")
+endif ()
+
 # if SKYNET_ROOT does not exist or if the CMAKE_INSTALL_PREFIX is different from
 # the cached one, set SKYNET_ROOT and cache it
 if((NOT SKYNET_ROOT) OR (NOT (CMAKE_INSTALL_PREFIX STREQUAL CMAKE_INSTALL_PREFIX_CACHED)))
