@@ -49,9 +49,9 @@ ACKNOWLEDGEMENTS
 ================
 
 SkyNet can read JINA REACLIB database files that contain reaction rate fits for
-various nuclear reactions. A copy of a REACLIB snapshot is distributed with
-SkyNet in the data directory. REACLIB is available at
-https://groups.nscl.msu.edu/jina/reaclib/db/index.php
+various nuclear reactions (Cyburt R. H., et al., 2010, ApJS, 189, 240). A copy
+of a REACLIB snapshot is distributed with SkyNet in the data directory.
+REACLIB is available at http://reaclib.jinaweb.org/index.php
 
 SkyNet uses TinyXML-2 developed by Lee Thomason, which is available at
 https://github.com/leethomason/tinyxml2
