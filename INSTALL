@@ -95,18 +95,18 @@ $ sudo apt-get install build-essential cmake libhdf5-dev swig3.0 libpython-dev \
 Installing
 ----------
 
-1) create a build directory (this can be anywhere, including inside the source
-   directory)
+1) create a build directory (this can be anywhere, including inside the SkyNet
+   root directory)
    $ mkdir <build_dir>
 
 2) configure SkyNet by running cmake
    $ cd <build_dir>
    $ cmake -DSKYNET_MATRIX_SOLVER=<solver> \
-     -DCMAKE_INSTALL_PREFIX=<install_dir> <src_dir>
+     -DCMAKE_INSTALL_PREFIX=<install_dir> <skynet_root_dir>
 
    where <install_dir> is the path where SkyNet will be installed, this must
-   not be the same as <src_dir>, which is the source directory. <solver> must
-   be one of the following:
+   not be inside <skynet_root_dir>, which is the root directory of the SkyNet
+   git repository. <solver> must be one of the following:
 
    (sparse solvers)
    - pardiso

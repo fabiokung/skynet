@@ -20,6 +20,23 @@ The above paper should be cited in any academic work that uses SkyNet or is
 based on SkyNet.
 
 
+GETTING STARTED
+===============
+
+Assuming all dependencies are available, SkyNet is compiled as follows:
+
+```
+git clone git@bitbucket.org:jlippuner/skynet.git
+cd skynet
+mkdir build && cd build
+cmake -DSKYNET_MATRIX_SOLVER=pardiso -DCMAKE_INSTALL_PREFIX=$HOME/skynet_install ..
+make -j install
+make test
+```
+
+See the INSTALL file for more details.
+
+
 
 DOCUMENTATION
 =============
