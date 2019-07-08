@@ -92,16 +92,12 @@ int main(int, char**) {
       printf("got NaN\n");
       return EXIT_FAILURE;
     }
-    if (finalY[i] < opts.SmallestYUsedForErrorCalculation)
-      continue;
-    double error = 2.0 * fabs(finalY[i] - expectedY[i])
-        / (expectedY[i] + finalY[i]);
-    maxError = std::max(maxError, error);
+    maxError = std::max(maxError, fabs(finalY[i] - expectedY[i]));
   }
 
-  printf("max fractional error = %.10E\n", maxError);
+  printf("max absolute error = %.10E\n", maxError);
 
-  if (maxError < 5.0E-7)
+  if (maxError < 1.0E-10)
     return EXIT_SUCCESS;
   else
     return EXIT_FAILURE;
