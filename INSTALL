@@ -54,8 +54,8 @@ Additionally, at least one of the following linear solvers is required:
   where CMake will find it. Add this directory to CMAKE_PREFIX_PATH, if
   necessary
   - libpardiso.so
-  - libpardiso500-GNU481-X86-64.so
-  - libpardiso500-INTEL1301-X86-64.so
+  - libpardiso600-GNU720-X86-64.so
+  - libpardiso600-GNU800-X86-64.so
 
 - Intel MKL available at https://software.intel.com/en-us/intel-mkl, this
   requires additionally:
