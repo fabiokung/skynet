@@ -9,6 +9,7 @@ include(LibFindMacros)
 # find the library
 find_library(Pardiso_LIBRARY
   NAMES pardiso
+        pardiso720-GNU831-X86-64
         pardiso600-GNU720-X86-64
         pardiso600-GNU800-X86-64
 )

@@ -8,14 +8,15 @@
 
 #include "Utilities/StopWatch.hpp"
 
-#include <cmath>
 #include <chrono>
+#include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <thread>
 
 #include "Utilities/FloatingPointExceptions.hpp"
 
-int main(int, char**) {
+int main(int, char **) {
   FloatingPointExceptions::Enable();
 
   StopWatch sw;
@@ -61,8 +62,8 @@ int main(int, char**) {
     return EXIT_FAILURE;
   }
 
-  if (fabs(500000000.0 - sw.GetElapsedTimeInNanoseconds()) / 500000000.0
-      > 0.01) {
+  if (fabs(500000000.0 - sw.GetElapsedTimeInNanoseconds()) / 500000000.0 >
+      0.01) {
     printf("Failed to measure time in nanoseconds.\n");
     return EXIT_FAILURE;
   }
@@ -81,5 +82,3 @@ int main(int, char**) {
 
   return EXIT_SUCCESS;
 }
-
-

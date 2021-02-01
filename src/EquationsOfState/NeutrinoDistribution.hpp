@@ -10,8 +10,9 @@
 #define SKYNET_EQUATIONSOFSTATE_NEUTRINODISTRIBUTION_HPP_
 
 #include <functional>
-#include <memory>
 #include <limits>
+#include <memory>
+#include <stdexcept>
 #include <valarray>
 #include <vector>
 
@@ -26,24 +27,15 @@
 #endif // SWIG
 
 struct NeutrinoSpeciesStruct {
-  enum Value {
-    NuE,
-    AntiNuE,
-    NuX,
-    NuMu,
-    AntiNuMu,
-    NuTau,
-    AntiNuTau
-  };
+  enum Value { NuE, AntiNuE, NuX, NuMu, AntiNuMu, NuTau, AntiNuTau };
 };
 
 typedef NeutrinoSpeciesStruct::Value NeutrinoSpecies;
 
 class NeutrinoDistribution {
 public:
-  NeutrinoDistribution(const std::valarray<NeutrinoSpecies>& species) :
-      mSpecies(species),
-      mLocalTMeV(0.0) {}
+  NeutrinoDistribution(const std::valarray<NeutrinoSpecies> &species)
+      : mSpecies(species), mLocalTMeV(0.0) {}
 
   virtual ~NeutrinoDistribution() {}
 
@@ -69,37 +61,30 @@ public:
   }
 
   // returns a distribution function f(e), where e is the neutrino energy in MeV
-  virtual std::function<double(double)> DistributionFunction(
-      const NeutrinoSpecies species) const =0;
+  virtual std::function<double(double)>
+  DistributionFunction(const NeutrinoSpecies species) const = 0;
 
-  double LocalT9() const {
-    return mLocalTMeV;
-  }
+  double LocalT9() const { return mLocalTMeV; }
 
   void SetLocalT9(const double T9) {
     mLocalTMeV = T9 * Constants::BoltzmannConstantInMeVPerGK;
   }
 
-  const std::valarray<NeutrinoSpecies>& Species() const {
-    return mSpecies;
-  }
+  const std::valarray<NeutrinoSpecies> &Species() const { return mSpecies; }
 
 protected:
   std::valarray<NeutrinoSpecies> mSpecies;
   double mLocalTMeV; // local fluid temperature in MeV
 };
 
-
 class DummyNeutrinoDistribution : public NeutrinoDistribution {
 public:
-  DummyNeutrinoDistribution() :
-      NeutrinoDistribution({ }) {}
+  DummyNeutrinoDistribution() : NeutrinoDistribution({}) {}
 
-  std::function<double(double)> DistributionFunction(
-      const NeutrinoSpecies /*species*/) const {
-    return [] (const double /*enuInMeV*/) { return 0.0; };
+  std::function<double(double)>
+  DistributionFunction(const NeutrinoSpecies /*species*/) const {
+    return [](const double /*enuInMeV*/) { return 0.0; };
   }
 };
-
 
 #endif // SKYNET_EQUATIONSOFSTATE_NEUTRINODISTRIBUTION_HPP_
