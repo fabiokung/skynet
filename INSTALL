@@ -54,6 +54,7 @@ Additionally, at least one of the following linear solvers is required:
   where CMake will find it. Add this directory to CMAKE_PREFIX_PATH, if
   necessary
   - libpardiso.so
+  - libpardiso720-GNU831-X86-64.so
   - libpardiso600-GNU720-X86-64.so
   - libpardiso600-GNU800-X86-64.so
 
