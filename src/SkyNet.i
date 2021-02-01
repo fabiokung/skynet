@@ -15,6 +15,8 @@
 %std_array_typemap(int, 2)
 
 %{
+#define SWIG_FILE_WITH_INIT
+
 // for exception handler
 #include <exception>
 

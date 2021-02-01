@@ -17,24 +17,24 @@ def H5ToDat(args):
   fname, total_size = args
 
   if os.path.exists(fname + ".dat"):
-    print fname + ": skipped"
+    print(fname + ": skipped")
     return
 
   NetworkOutput.MakeDatFile(fname)
 
   num_done.value = num_done.value + 1
-  print "[%i/%i] done %s" % (num_done.value, total_size, fname)
+  print("[%i/%i] done %s" % (num_done.value, total_size, fname))
 
 
 if __name__ == '__main__':
   if (len(sys.argv) != 2):
-    print "Usage: %s <directory with .h5 files>" % sys.argv[0]
+    print("Usage: %s <directory with .h5 files>" % sys.argv[0])
     sys.exit(1)
 
   output_dir = sys.argv[1]
 
   num_cores = multiprocessing.cpu_count()
-  print "Running with %i worker threads" % num_cores
+  print("Running with %i worker threads" % num_cores)
 
   pool = multiprocessing.Pool(num_cores, maxtasksperchild=1)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     # check file size
     path = output_dir + "/" + file
     if (os.path.getsize(path) > size_limit):
-      print "%s is big, defer until later" % path
+      print("%s is big, defer until later" % path)
       big_files.append(path)
     else:
       files.append(path)
@@ -66,6 +66,6 @@ if __name__ == '__main__':
 
   # now do big files serially because they require lots of memory
   num_done.value = 0
-  print "now doing big files individually"
+  print("now doing big files individually")
   for f in big_files:
     H5ToDat((f, len(big_files)))

@@ -27,8 +27,8 @@ option(ENABLE_SWIG "Tell cmake to enable support for package SWIG" ON)
 
 if(ENABLE_SWIG)
   option(REQUIRE_SWIG "Abort the build if SWIG is not found." OFF)
-  find_package(SWIG 3)
-  find_package(PythonLibs 2.6)
+  find_package(SWIG 4)
+  find_package(PythonLibs 3)
 
   #TODO is there a better way to do this?
   if(SWIG_FOUND AND PYTHONLIBS_FOUND)
