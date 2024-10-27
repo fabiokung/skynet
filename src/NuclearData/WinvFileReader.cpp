@@ -82,7 +82,7 @@ std::unordered_map<std::string, Nuclide> WinvFileReader::GetAllNuclides(
 
   while(!ifs.eof()) {
     // read first line
-    char name[5];
+    char name[6];
     double A;
     int Z;
     int N;
