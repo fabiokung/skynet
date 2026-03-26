@@ -23,8 +23,15 @@ find_path(Cairomm_INCLUDE_DIR
 
 libfind_library(Cairomm cairomm 1.0)
 
+# cairommconfig.h lives in a lib subdirectory (same pattern as sigc++config.h)
+find_path(CairommConfig_INCLUDE_DIR
+  NAMES cairommconfig.h
+  PATHS ${Cairomm_PKGCONF_INCLUDE_DIRS}
+  PATH_SUFFIXES cairomm-1.0/include lib/cairomm-1.0/include
+)
+
 # Set the include dir variables and the libraries and let libfind_process do the rest.
 # NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(Cairomm_PROCESS_INCLUDES Cairomm_INCLUDE_DIR Cairo_INCLUDE_DIRS)
+set(Cairomm_PROCESS_INCLUDES Cairomm_INCLUDE_DIR CairommConfig_INCLUDE_DIR Cairo_INCLUDE_DIRS)
 set(Cairomm_PROCESS_LIBS Cairomm_LIBRARY Cairo_LIBRARIES)
 libfind_process(Cairomm)

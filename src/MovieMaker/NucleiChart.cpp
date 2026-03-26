@@ -850,18 +850,18 @@ void NucleiChart::DrawPlotDots(CairoImage& image, const int timeIdx) const {
   int idx = timeIdx - mDat.FirstTimeIndex();
 
   image.Context()->arc(mPlotCoords[idx].t,
-      mPlotHeight - mPlotCoords[idx].temp, 4.0, 0.0, 2.0 * M_PIl);
+      mPlotHeight - mPlotCoords[idx].temp, 4.0, 0.0, 2.0 * M_PI);
   image.Context()->set_source_rgb(1.0, 0.0, 0.0);
   image.Context()->fill();
 
 
   image.Context()->arc(mPlotCoords[idx].t,
-      mPlotHeight - mPlotCoords[idx].density, 4.0, 0.0, 2.0 * M_PIl);
+      mPlotHeight - mPlotCoords[idx].density, 4.0, 0.0, 2.0 * M_PI);
   image.Context()->set_source_rgb(0.0, 0.0, 1.0);
   image.Context()->fill();
 
   image.Context()->arc(mPlotCoords[idx].t,
-      mPlotHeight - mPlotCoords[idx].edot, 4.0, 0.0, 2.0 * M_PIl);
+      mPlotHeight - mPlotCoords[idx].edot, 4.0, 0.0, 2.0 * M_PI);
   image.Context()->set_source_rgb(0.0, 0.0, 0.0);
   image.Context()->fill();
 
