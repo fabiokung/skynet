@@ -13,6 +13,15 @@
             }
         },
         {
+            "name": "pardiso",
+            "inherits": "macos",
+            "description": "macOS ARM with standalone Pardiso sparse solver",
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "pardiso",
+                "Pardiso_DIR": "$env{HOME}/lib/pardiso"
+            }
+        },
+        {
             "name": "macos",
             "inherits": "default",
             "description": "macOS with Apple Clang + Command Line Tools + Homebrew Python/SWIG",
@@ -37,6 +46,10 @@
         {
             "name": "macos",
             "configurePreset": "macos"
+        },
+        {
+            "name": "pardiso",
+            "configurePreset": "pardiso"
         }
     ],
     "testPresets": [
@@ -47,6 +60,13 @@
         {
             "name": "macos",
             "configurePreset": "macos"
+        },
+        {
+            "name": "pardiso",
+            "configurePreset": "pardiso",
+            "environment": {
+                "DYLD_LIBRARY_PATH": "$env{HOME}/lib/pardiso"
+            }
         }
     ]
 }
