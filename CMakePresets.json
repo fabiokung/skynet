@@ -1,0 +1,52 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Armadillo solver, no SWIG/Movie. Override SKYNET_MATRIX_SOLVER for large networks (e.g. mkl, pardiso).",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "armadillo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/skynet_install",
+                "ENABLE_SWIG": "OFF",
+                "ENABLE_MOVIE": "OFF"
+            }
+        },
+        {
+            "name": "macos",
+            "inherits": "default",
+            "description": "macOS with Apple Clang + Command Line Tools + Homebrew Python/SWIG",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "toolchainFile": "${sourceDir}/cmake/macos-toolchain.cmake",
+            "cacheVariables": {
+                "ENABLE_SWIG": "ON",
+                "SWIG_EXECUTABLE": "/opt/homebrew/bin/swig",
+                "PYTHON_EXECUTABLE": "/opt/homebrew/bin/python3"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "macos",
+            "configurePreset": "macos"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "macos",
+            "configurePreset": "macos"
+        }
+    ]
+}

@@ -10,7 +10,7 @@ find_package(GSL REQUIRED)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${GSL_LIBRARIES}")
 include_directories(${GSL_INCLUDES})
 
-find_package(Boost REQUIRED system filesystem serialization)
+find_package(Boost REQUIRED filesystem serialization)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
