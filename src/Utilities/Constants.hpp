@@ -50,9 +50,9 @@ struct ConstantsStruct {
   // 2 pi hbar^2 c^2 N_A^{2/3}
 #if defined(__ICC) || defined(__INTEL_COMPILER) || defined(__clang__)
   // pow() is not constexpr in the C++ standard; GCC accepts it as an extension
-  // but Intel and Clang do not, so use a precomputed literal instead:
-  // pow(6.02214129e23, 2.0/3.0) = 7.13127680E15
-  static constexpr double TwoPiHbar2C2NA23 = TwoPiHbar2C2 * 7.13127680E15;
+  // but Intel and Clang do not, so use a precomputed literal instead.
+  // Full-precision IEEE 754: pow(6.02214129e23, 2.0/3.0) = 7.13127679759458e15
+  static constexpr double TwoPiHbar2C2NA23 = TwoPiHbar2C2 * 7.13127679759458e15;
 
 #else
   static constexpr double TwoPiHbar2C2NA23 = TwoPiHbar2C2
