@@ -8,7 +8,10 @@
 
 #include <cstdio>
 #include <cmath>
+#include <cerrno>
+#include <cstdlib>
 #include <fstream>
+#include <string>
 #include <vector>
 
 #include "BuildInfo.hpp"
@@ -79,12 +82,20 @@ int main(int, char**) {
 //    fprintf(fout, "%.20E\n", finalY[i]);
 //  fclose(fout);
 
-  std::vector<double> expectedY(finalY.size());
+  // Read expected Y values token-by-token via strtod so that subnormal values
+  // (which cause errno=ERANGE and set the stream's failbit) do not poison all
+  // subsequent reads.
+  std::vector<double> expectedY(finalY.size(), 0.0);
   {
     std::ifstream ifs("final_y", std::ifstream::in);
-    for (unsigned int i = 0; i < expectedY.size(); ++i)
-      ifs >> expectedY[i];
-
+    std::string token;
+    for (unsigned int i = 0; i < expectedY.size(); ++i) {
+      if (!(ifs >> token)) break;
+      errno = 0;
+      char* end;
+      double v = strtod(token.c_str(), &end);
+      expectedY[i] = (errno == ERANGE) ? 0.0 : v;
+    }
     ifs.close();
   }
 
@@ -95,6 +106,9 @@ int main(int, char**) {
       return EXIT_FAILURE;
     }
     if (finalY[i] < opts.SmallestYUsedForErrorCalculation)
+      continue;
+    // skip entries where the reference is also below the tracking threshold
+    if (expectedY[i] < opts.SmallestYUsedForErrorCalculation)
       continue;
     double error = fabs(finalY[i] - expectedY[i])
         / expectedY[i];
