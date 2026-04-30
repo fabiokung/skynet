@@ -1,0 +1,142 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Armadillo solver, no SWIG/Movie. Override SKYNET_MATRIX_SOLVER for large networks (e.g. mkl, pardiso).",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "armadillo",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/skynet_install",
+                "ENABLE_SWIG": "OFF",
+                "ENABLE_MOVIE": "OFF"
+            }
+        },
+        {
+            "name": "pardiso",
+            "inherits": "macos",
+            "description": "macOS ARM with standalone Pardiso sparse solver",
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "pardiso",
+                "Pardiso_DIR": "$env{HOME}/lib/pardiso"
+            }
+        },
+        {
+            "name": "macos",
+            "inherits": "default",
+            "description": "macOS with Apple Clang + Command Line Tools + Homebrew Python/SWIG",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            },
+            "toolchainFile": "${sourceDir}/cmake/macos-toolchain.cmake",
+            "cacheVariables": {
+                "ENABLE_SWIG": "ON",
+                "SWIG_EXECUTABLE": "/opt/homebrew/bin/swig",
+                "Python3_EXECUTABLE": "/opt/homebrew/bin/python3"
+            }
+        },
+        {
+            "name": "mkl",
+            "inherits": "default",
+            "description": "Linux x86_64 with Intel oneAPI MKL sparse solver (epp-theory02)",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "environment": {
+                "MKLROOT": "/opt/intel/oneapi/mkl/latest"
+            },
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "mkl",
+                "CMAKE_CXX_FLAGS": "-march=native",
+                "CMAKE_Fortran_FLAGS": "-march=native"
+            }
+        },
+        {
+            "name": "ubuntu",
+            "inherits": "mkl",
+            "description": "Ubuntu LTS x86_64: Intel oneAPI MKL sparse solver (apt) + SWIG + movie. Fast default.",
+            "cacheVariables": {
+                "ENABLE_SWIG": "ON",
+                "REQUIRE_SWIG": "ON",
+                "ENABLE_MOVIE": "ON",
+                "REQUIRE_MOVIE": "ON"
+            }
+        },
+        {
+            "name": "ubuntu-trilinos",
+            "inherits": "default",
+            "description": "Ubuntu LTS, license-free + any arch: apt-only Trilinos KLU sparse solver + SWIG + movie. Slower than MKL.",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "SKYNET_MATRIX_SOLVER": "trilinos_klu",
+                "ENABLE_SWIG": "ON",
+                "REQUIRE_SWIG": "ON",
+                "ENABLE_MOVIE": "ON",
+                "REQUIRE_MOVIE": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "macos",
+            "configurePreset": "macos"
+        },
+        {
+            "name": "pardiso",
+            "configurePreset": "pardiso"
+        },
+        {
+            "name": "mkl",
+            "configurePreset": "mkl"
+        },
+        {
+            "name": "ubuntu",
+            "configurePreset": "ubuntu"
+        },
+        {
+            "name": "ubuntu-trilinos",
+            "configurePreset": "ubuntu-trilinos"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "default",
+            "configurePreset": "default"
+        },
+        {
+            "name": "macos",
+            "configurePreset": "macos"
+        },
+        {
+            "name": "pardiso",
+            "configurePreset": "pardiso",
+            "environment": {
+                "DYLD_LIBRARY_PATH": "$env{HOME}/lib/pardiso"
+            }
+        },
+        {
+            "name": "mkl",
+            "configurePreset": "mkl"
+        },
+        {
+            "name": "ubuntu",
+            "configurePreset": "ubuntu"
+        },
+        {
+            "name": "ubuntu-trilinos",
+            "configurePreset": "ubuntu-trilinos"
+        }
+    ]
+}

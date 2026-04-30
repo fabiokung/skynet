@@ -10,7 +10,7 @@ find_package(GSL REQUIRED)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${GSL_LIBRARIES}")
 include_directories(${GSL_INCLUDES})
 
-find_package(Boost REQUIRED system filesystem serialization)
+find_package(Boost REQUIRED filesystem serialization)
 set(SKYNET_EXTERNAL_LIBS "${SKYNET_EXTERNAL_LIBS};${Boost_LIBRARIES}")
 include_directories(${Boost_INCLUDE_DIRS})
 
@@ -27,11 +27,10 @@ option(ENABLE_SWIG "Tell cmake to enable support for package SWIG" ON)
 
 if(ENABLE_SWIG)
   option(REQUIRE_SWIG "Abort the build if SWIG is not found." OFF)
-  find_package(SWIG 3)
-  find_package(PythonLibs 2.6)
+  find_package(SWIG 4)
+  find_package(Python3 COMPONENTS Interpreter Development)
 
-  #TODO is there a better way to do this?
-  if(SWIG_FOUND AND PYTHONLIBS_FOUND)
+  if(SWIG_FOUND AND Python3_FOUND)
     set(USE_SWIG TRUE)
   else()
     set(USE_SWIG FALSE)
@@ -42,12 +41,12 @@ else()
 endif()
 
 if(REQUIRE_SWIG AND (NOT USE_SWIG))
-  message(FATAL_ERROR "Requested support for SWIG, but SWIG and/or PythonLibs could not be found.")
+  message(FATAL_ERROR "Requested support for SWIG, but SWIG and/or Python3 development files could not be found.")
 endif()
 
 if(USE_SWIG)
   include(${SWIG_USE_FILE})
-  include_directories(${PYTHON_INCLUDE_DIRS})
+  include_directories(${Python3_INCLUDE_DIRS})
 endif()
 
 

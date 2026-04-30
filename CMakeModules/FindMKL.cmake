@@ -87,8 +87,22 @@ find_package_handle_standard_args(MKL DEFAULT_MSG
 
 mark_as_advanced(LIB_MKL_CORE LIB_MKL_INTEL LIB_MKL_SEQUENTIAL MKL_INCLUDE_DIRS)
 
-if (CMAKE_SIZEOF_VOID_P MATCHES 8)
-  set(MKL_STATIC_LIBRARIES "-Wl,-Bstatic,--start-group;mkl_intel_lp64;mkl_core;mkl_sequential;-Wl,--end-group,-Bdynamic")
+# threading layer: "sequential" (default) or "gnu" (OpenMP via libgomp, for gcc builds);
+# "gnu" lets MKL's sparse solve use multiple threads (set OMP_NUM_THREADS at runtime).
+if (NOT DEFINED MKL_THREADING)
+  set(MKL_THREADING "sequential")
+endif ()
+if (MKL_THREADING STREQUAL "gnu")
+  set(_MKL_THREAD_LIB "mkl_gnu_thread")
 else ()
-  set(MKL_STATIC_LIBRARIES "-Wl,-Bstatic,--start-group;mkl_inte;mkl_core;mkl_sequential;-Wl,--end-group,-Bdynamic")
+  set(_MKL_THREAD_LIB "mkl_sequential")
+endif ()
+
+if (CMAKE_SIZEOF_VOID_P MATCHES 8)
+  set(MKL_STATIC_LIBRARIES "-Wl,-Bstatic,--start-group;mkl_intel_lp64;mkl_core;${_MKL_THREAD_LIB};-Wl,--end-group,-Bdynamic")
+else ()
+  set(MKL_STATIC_LIBRARIES "-Wl,-Bstatic,--start-group;mkl_inte;mkl_core;${_MKL_THREAD_LIB};-Wl,--end-group,-Bdynamic")
+endif ()
+if (MKL_THREADING STREQUAL "gnu")
+  list(APPEND MKL_STATIC_LIBRARIES "gomp")
 endif ()

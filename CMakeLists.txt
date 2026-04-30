@@ -1,4 +1,4 @@
- cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5)
 
 enable_testing()
 
@@ -16,8 +16,8 @@ project(SkyNet CXX C Fortran)
 # enable warnings
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
 
-# enable C++11
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+# C++14 required by Armadillo >= 10 (original code was C++11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 # generate debugging symbols for release and debug
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -119,7 +119,7 @@ if(USE_SWIG)
   SWIG_LINK_LIBRARIES(SkyNet
     SkyNet_static
     ${SKYNET_EXTERNAL_LIBS}
-    ${PYTHON_LIBRARIES}
+    ${Python3_LIBRARIES}
   )
 
   install(FILES ${CMAKE_BINARY_DIR}/_SkyNet.so

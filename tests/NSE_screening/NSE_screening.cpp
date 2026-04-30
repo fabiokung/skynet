@@ -11,6 +11,7 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include "Utilities/Exp10.hpp"
 
 #include "BuildInfo.hpp"
 #include "EquationsOfState/HelmholtzEOS.hpp"

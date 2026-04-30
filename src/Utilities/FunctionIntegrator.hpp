@@ -11,6 +11,7 @@
 
 #include <limits>
 #include <stdexcept>
+#include <string>
 
 #include <gsl/gsl_integration.h>
 #include <gsl/gsl_errno.h>
