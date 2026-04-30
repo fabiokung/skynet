@@ -1,4 +1,5 @@
 add_subdirectory(r-process)
+add_subdirectory(vp-process-friedland)
 if(USE_MOVIE)
   add_subdirectory(movie)
 endif()
