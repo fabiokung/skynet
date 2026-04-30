@@ -156,18 +156,23 @@ void NucleiChart::MakeBackground(const std::string& pathToPlotFile) {
   mBackground = CairoImage(mWidth, mHeight, Opt::backgroundRGB);
   mBackground.Context()->set_line_width(Opt::lineWidth);
 
-  // load plot background
+  // load plot background (optional — skip silently if the file doesn't exist)
+  mPlotHeight = 0.0;
   if (pathToPlotFile != "") {
-    CairoImage plotBackground(0, 0);
-    plotBackground.Surface() = Cairo::ImageSurface::create_from_png(
-        pathToPlotFile + "/plot_background.png");
-    mPlotHeight = plotBackground.Height();
-    mBackground.Context()->save();
-    mBackground.Context()->translate(mXOffset / 2.0,
-        mHeight - mChartHeight + mYOffset - 5.0);
-    mBackground.Context()->set_source(plotBackground.Surface(), 0.0, 0.0);
-    mBackground.Context()->paint();
-    mBackground.Context()->restore();
+    std::ifstream plotBgCheck(pathToPlotFile + "/plot_background.png");
+    if (plotBgCheck.good()) {
+      plotBgCheck.close();
+      CairoImage plotBackground(0, 0);
+      plotBackground.Surface() = Cairo::ImageSurface::create_from_png(
+          pathToPlotFile + "/plot_background.png");
+      mPlotHeight = plotBackground.Height();
+      mBackground.Context()->save();
+      mBackground.Context()->translate(mXOffset / 2.0,
+          mHeight - mChartHeight + mYOffset - 5.0);
+      mBackground.Context()->set_source(plotBackground.Surface(), 0.0, 0.0);
+      mBackground.Context()->paint();
+      mBackground.Context()->restore();
+    }
   }
 
   // load logo
