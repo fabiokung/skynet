@@ -16,59 +16,91 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 #define MAX_EXPONENTIAL 200.0
 
 namespace { // unnamed so this can only be used in this file
 
+const double BaryonMassInMeV = 939.0;
+
+double WeakMagnetismCorrection(const double eNuMeV, const bool nueCap) {
+  // Charged-current recoil and weak-magnetism correction from
+  // Horowitz, Phys. Rev. D 65, 043001 (2002), Eqs. (24) and (25).
+  // These first-order factors are accurate at the supernova neutrino
+  // energies used by the νp-process example.
+  const double coeff = nueCap ? 1.01 : -7.22;
+  return std::max(0.0, 1.0 + coeff * eNuMeV / BaryonMassInMeV);
+}
+
+double CaptureCorrection(const double eNuMeV, const bool nueCap,
+    const NeutrinoCorrectionMode correctionMode) {
+  if (correctionMode == NeutrinoCorrectionMode::None)
+    return 1.0;
+
+  return WeakMagnetismCorrection(eNuMeV, nueCap);
+}
+
 std::function<double(double)> MakeECapFunc(const double scaledT,
     const double eta, const double meScaled, const double scaledQ,
     const int nuPow, const double scaledWm, const double eScale,
+    const bool nueCap, const NeutrinoCorrectionMode correctionMode,
     const std::function<double(double)> distributionFunction) {
     return [=] (const double x) {
         double ae = x / scaledT - eta;
         if (ae > MAX_EXPONENTIAL)
           return 0.0;
         ae = exp(ae);
+        const double eNuMeV = (x - scaledQ) * eScale;
+        const double correction = CaptureCorrection(eNuMeV, nueCap,
+            correctionMode);
 
         return x * sqrt(x * x - meScaled * meScaled)
             * pow((x - scaledQ), nuPow)
-            * (1.0 + x * scaledWm) / (1.0 + ae)
-            * (1.0 - distributionFunction((x - scaledQ) * eScale));
+            * (1.0 + x * scaledWm) * correction / (1.0 + ae)
+            * (1.0 - distributionFunction(eNuMeV));
       };
 }
 
 std::function<double(double)> MakeNuCapFunc(const double scaledT,
     const double eta, const double meScaled, const double scaledQ,
     const int nuPow, const double scaledWm, const double eScale,
+    const bool nueCap, const NeutrinoCorrectionMode correctionMode,
     const std::function<double(double)> distributionFunction) {
     return [=] (const double x) {
         double ae = x / scaledT - eta;
         if (ae > MAX_EXPONENTIAL)
           ae = MAX_EXPONENTIAL;
         ae = exp(ae);
+        const double eNuMeV = (x - scaledQ) * eScale;
+        const double correction = CaptureCorrection(eNuMeV, nueCap,
+            correctionMode);
 
         return x * sqrt(x * x - meScaled * meScaled)
             * pow((x - scaledQ), nuPow)
-            * (1.0 + x * scaledWm) * ae / (1.0 + ae)
-            * distributionFunction((x - scaledQ) * eScale);
+            * (1.0 + x * scaledWm) * correction * ae / (1.0 + ae)
+            * distributionFunction(eNuMeV);
       };
 }
 
 std::function<double(double)> MakeDecayFunc(const double scaledT,
     const double eta, const double meScaled, const double scaledQ,
     const int nuPow, const double scaledWm, const double eScale,
+    const bool nueCap, const NeutrinoCorrectionMode correctionMode,
     const std::function<double(double)> distributionFunction) {
     return [=] (const double x) {
         double ae = x / scaledT - eta;
         if (ae > MAX_EXPONENTIAL)
           ae = MAX_EXPONENTIAL;
         ae = exp(ae);
+        const double eNuMeV = (x - scaledQ) * eScale;
+        const double correction = CaptureCorrection(eNuMeV, nueCap,
+            correctionMode);
 
         return x * sqrt(x * x - meScaled * meScaled)
             * pow((x + scaledQ), nuPow)
-            * (1.0 + x * scaledWm) * ae / (1.0 + ae)
-            * (1.0 - distributionFunction((x - scaledQ) * eScale));
+            * (1.0 + x * scaledWm) * correction * ae / (1.0 + ae)
+            * (1.0 - distributionFunction(eNuMeV));
       };
 }
 } // namespace [unnamed]
@@ -76,13 +108,14 @@ std::function<double(double)> MakeDecayFunc(const double scaledT,
 NeutrinoReactionLibrary::NeutrinoReactionLibrary(const Neutrino neutrinoLib,
     const std::string& description,
     const NuclideLibrary& nucLib, const NetworkOptions& opts, bool onlyNuCap,
-    bool nuHeating, bool includeBeta) :
+    bool nuHeating, bool includeBeta, NeutrinoCorrectionMode correctionMode) :
     ReactionLibraryBase(ReactionType::Weak, description,
         neutrinoLib.GetSource(), neutrinoLib.GetValidReactions(nucLib),
         nucLib, opts, false),
     mOnlyNuCap(onlyNuCap),
     mNuHeating(nuHeating),
-    mIncludeBeta(includeBeta) {
+    mIncludeBeta(includeBeta),
+    mCorrectionMode(correctionMode) {
 
   auto entries = neutrinoLib.Entries();
   std::vector<double> Q, matrixElement, Wm;
@@ -92,6 +125,16 @@ NeutrinoReactionLibrary::NeutrinoReactionLibrary(const Neutrino neutrinoLib,
     matrixElement.push_back(entry.GetMatrixElement());
     Wm.push_back(entry.GetWm());
     nueCap.push_back(entry.IsNueReaction());
+  }
+
+  if (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetism) {
+    for (auto wm : Wm) {
+      if (wm != 0.0) {
+        throw std::runtime_error("WeakMagnetism correction mode cannot be "
+            "combined with non-zero neutrino reaction weak-magnetism "
+            "coefficients.");
+      }
+    }
   }
 
   mQ = ReactionData<double>(Q);
@@ -109,6 +152,9 @@ void NeutrinoReactionLibrary::PrintAdditionalInfo(
     NetworkOutput * const pOutput) const {
   pOutput->Log("#   Only nu capture: %s\n", mOnlyNuCap ? "yes" : "no");
   pOutput->Log("#   Compute heating: %s\n", mNuHeating ? "yes" : "no");
+  pOutput->Log("#   Correction mode: %s\n",
+      (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetism)
+      ? "WeakMagnetism" : "None");
 }
 
 void NeutrinoReactionLibrary::DoLoopOverReactionData(
@@ -190,24 +236,28 @@ void NeutrinoReactionLibrary::DoCalculateRates(
     if (!mOnlyNuCap) {
       try {
         auto eCapFunc = MakeECapFunc(scaledT, eta, meScaled, scaledQ, 2,
-            scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+            scaledWm, eScale, mNueCap[i], mCorrectionMode,
+            nuDist->DistributionFunction(nuSpec));
         if (eta > -100.0) 
           ecapInt = integrator.Integrate(eCapFunc, lower_lim,
               std::numeric_limits<double>::infinity());
         if (-mQ[i] > lower_lim && mIncludeBeta) { 
           auto decayFunc = MakeDecayFunc(scaledT, eta, meScaled, scaledQ, 2,
-              scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+              scaledWm, eScale, mNueCap[i], mCorrectionMode,
+              nuDist->DistributionFunction(nuSpec));
           ecapInt = integrator.Integrate(decayFunc, lower_lim, -scaledQ);
         }
         if (mNuHeating) {
           auto eCapFunc = MakeECapFunc(scaledT, eta, meScaled, scaledQ, 3,
-              scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+              scaledWm, eScale, mNueCap[i], mCorrectionMode,
+              nuDist->DistributionFunction(nuSpec));
           if (eta > -100.0)
             ecapHeatInt = integrator.Integrate(eCapFunc, lower_lim,
                 std::numeric_limits<double>::infinity());
           if (-mQ[i] > Constants::ElectronMassInMeV && mIncludeBeta) { 
             auto BetaFunc = MakeDecayFunc(scaledT, eta, meScaled, scaledQ, 3,
-                scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+                scaledWm, eScale, mNueCap[i], mCorrectionMode,
+                nuDist->DistributionFunction(nuSpec));
             ecapHeatInt += integrator.Integrate(BetaFunc, 
                 Constants::ElectronMassInMeV/eScale,
                 -scaledQ);
@@ -237,12 +287,14 @@ void NeutrinoReactionLibrary::DoCalculateRates(
     double nucapHeatInt = 0.0;
     try {
       auto nuCapFunc = MakeNuCapFunc(scaledT, eta, meScaled, scaledQ, 2,
-          scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+          scaledWm, eScale, mNueCap[i], mCorrectionMode,
+          nuDist->DistributionFunction(nuSpec));
       nucapInt = integrator.Integrate(nuCapFunc, lower_lim,
           std::numeric_limits<double>::infinity());
       if (mNuHeating) {
         auto nuCapFunc = MakeNuCapFunc(scaledT, eta, meScaled, scaledQ, 3,
-            scaledWm, eScale, nuDist->DistributionFunction(nuSpec));
+            scaledWm, eScale, mNueCap[i], mCorrectionMode,
+            nuDist->DistributionFunction(nuSpec));
         nucapHeatInt = -integrator.Integrate(nuCapFunc, lower_lim,
             std::numeric_limits<double>::infinity());
       } else {
@@ -261,4 +313,3 @@ void NeutrinoReactionLibrary::DoCalculateRates(
     mHeatingInverseRates[i] = mMatrixElement[i] * heat_const * nucapHeatInt;
   }
 }
-

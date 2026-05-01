@@ -9,6 +9,7 @@
 ///   - REACLIB v2.2 strong + weak reactions
 ///   - Beard+2017 medium-enhanced triple-alpha (SpecialReactionLibrary)
 ///   - NeutrinoReactionLibrary from data/neutrino_reactions.dat
+///   - Charged-current weak-magnetism/recoil corrections
 ///   - Exponential L(t) = L0 * exp(-(t - t_ref)/tau_d)
 ///   - Optional GR blueshift: T_nu *= Phi(r), L_nu *= Phi^4
 ///
@@ -16,7 +17,7 @@
 ///   vp_process <trajectory_file> <output_prefix> [options]
 ///
 /// Options:
-///   --lbar-ratio R     L_nuebar / L_nue (default 1/1.22 ≈ 0.8197)
+///   --lbar-ratio R     L_nuebar / L_nue (default 1.0)
 ///   --L0 L             Initial ν_e luminosity in erg/s (default 7e51)
 ///   --T-nue T          ν_e temperature in MeV (default 4.0)
 ///   --T-nuebar T       ν̄_e temperature in MeV (default 5.0)
@@ -25,6 +26,7 @@
 ///   --tau-d T          Luminosity e-folding time in s (default 3.0)
 ///   --t-ref T          Reference time for L(t) in s (default 1.0)
 ///   --M-pns M          PNS mass in solar masses (default 1.4)
+///   --no-wm-recoil     Disable weak-magnetism/recoil correction
 ///   --no-gr            Disable GR blueshift correction
 ///   --no-alpha         Disable Beard+2017 enhanced triple-alpha
 ///   --t-end T          End time in s (default 1e9)
@@ -78,7 +80,7 @@ static double GrBlueshift(const double rCm, const double gmOverC2) {
 struct Args {
   std::string TrajFile;
   std::string OutputPrefix;
-  double LbarRatio  = 1.0 / 1.22;
+  double LbarRatio  = 1.0;
   double L0Nue      = 7.0e51;       // erg/s
   double TNueMeV    = 4.0;          // MeV
   double TNuebarMeV = 5.0;          // MeV
@@ -87,6 +89,7 @@ struct Args {
   double TauD       = 3.0;          // s
   double TRef       = 1.0;          // s, L(t)=L0*exp(-(t-t_ref)/tau_d)
   double MPnsMsun   = 1.4;
+  bool   UseWmRecoil = true;
   bool   UseGR      = true;
   bool   UseAlpha   = true;
   double TEnd       = 1.0e9;        // s
@@ -125,6 +128,8 @@ static Args ParseArgs(int argc, char** argv) {
       a.TRef = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--M-pns") && i+1 < argc)
       a.MPnsMsun = std::stod(argv[++i]);
+    else if (!strcmp(argv[i], "--no-wm-recoil"))
+      a.UseWmRecoil = false;
     else if (!strcmp(argv[i], "--no-gr"))
       a.UseGR = false;
     else if (!strcmp(argv[i], "--no-alpha"))
@@ -245,7 +250,9 @@ int main(int argc, char** argv) {
   NeutrinoReactionLibrary nuLib(
       SkyNetRoot + "/data/neutrino_reactions.dat",
       "Neutrino reactions", nuclib, opts,
-      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/true);
+      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/true,
+      args.UseWmRecoil ? NeutrinoCorrectionMode::WeakMagnetism
+                       : NeutrinoCorrectionMode::None);
 
   // Alpha burning (Beard+2017 medium-enhanced triple-alpha)
   // Be9Fac=1 (nominal), enhancement factors from RunSetup.cpp defaults
@@ -356,8 +363,9 @@ int main(int argc, char** argv) {
   printf("Evolving from NSE (Ye=%.4f) to t=%.3e s...\n", traj.Ye, args.TEnd);
   printf("  lbar-ratio = %.6f  L0_nue = %.3e erg/s  tau_d = %.1f s\n",
       args.LbarRatio, args.L0Nue, args.TauD);
-  printf("  T_nue = %.2f MeV  T_nuebar = %.2f MeV  GR blueshift: %s\n",
-      args.TNueMeV, args.TNuebarMeV, args.UseGR ? "on" : "off");
+  printf("  T_nue = %.2f MeV  T_nuebar = %.2f MeV  WM/recoil: %s  GR blueshift: %s\n",
+      args.TNueMeV, args.TNuebarMeV, args.UseWmRecoil ? "on" : "off",
+      args.UseGR ? "on" : "off");
   printf("  Late-time tails: T ∝ t^%.4f  ρ ∝ t^%.4f\n",
       args.T9Slope, args.RhoSlope);
 
