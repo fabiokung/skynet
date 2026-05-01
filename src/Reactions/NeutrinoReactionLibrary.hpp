@@ -17,19 +17,38 @@
 #include "Reactions/Reaction.hpp"
 #include "Reactions/ReactionLibraryBase.hpp"
 
+// we use the workaround http://stackoverflow.com/a/13406244 to make the enum
+// show up under the name NeutrinoCorrectionMode in Python instead of
+// the enum values being global constants
+
+#ifdef SWIG
+%rename(NeutrinoCorrectionMode) NeutrinoCorrectionModeStruct;
+#endif // SWIG
+
+struct NeutrinoCorrectionModeStruct {
+  enum Value {
+    None,
+    WeakMagnetism
+  };
+};
+
+typedef NeutrinoCorrectionModeStruct::Value NeutrinoCorrectionMode;
+
 class NeutrinoReactionLibrary: public ReactionLibraryBase {
 public:
   NeutrinoReactionLibrary(const Neutrino neutrinoLib,
       const std::string& description, const NuclideLibrary& nuclib,
       const NetworkOptions& opts, bool onlyNuCap = false,
-      bool nuHeating = false, bool includeBeta = false);
+      bool nuHeating = false, bool includeBeta = false,
+      NeutrinoCorrectionMode correctionMode = NeutrinoCorrectionMode::None);
 
   NeutrinoReactionLibrary(const std::string& nuFile,
       const std::string& description, const NuclideLibrary& nuclib,
       const NetworkOptions& opts, bool onlyNuCap = false,
-      bool nuHeating = false, bool includeBeta = false) :
+      bool nuHeating = false, bool includeBeta = false,
+      NeutrinoCorrectionMode correctionMode = NeutrinoCorrectionMode::None) :
       NeutrinoReactionLibrary(Neutrino(nuFile, nuclib), description, nuclib,
-        opts, onlyNuCap, nuHeating, includeBeta) {}
+        opts, onlyNuCap, nuHeating, includeBeta, correctionMode) {}
 
   std::unique_ptr<ReactionLibraryBase> MakeUniquePtr() const {
     return std::unique_ptr<ReactionLibraryBase>(
@@ -101,6 +120,7 @@ private:
   bool mOnlyNuCap;
   bool mNuHeating;
   bool mIncludeBeta;
+  NeutrinoCorrectionMode mCorrectionMode;
 };
 
 #endif // SKYNET_REACTIONS_NEUTRINOREACTIONLIBRARY_HPP_

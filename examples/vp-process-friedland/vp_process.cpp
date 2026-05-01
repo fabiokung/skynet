@@ -50,7 +50,7 @@ static double GrBlueshift(const double rCm, const double gmOverC2) {
 struct Args {
   std::string TrajFile;
   std::string OutputPrefix;
-  double LbarRatio = 1.0 / 1.22;
+  double LbarRatio = 1.0;
   double L0Nue = 7.0e51;
   double TNueMeV = 4.0;
   double TNuebarMeV = 5.0;
@@ -59,6 +59,7 @@ struct Args {
   double TauD = 3.0;
   double TRef = 1.0; // L(t)=L0*exp(-(t-t_ref)/tau_d)
   double MPnsMsun = 1.4;
+  bool UseWmRecoil = true;
   bool UseGR = true;
   bool UseAlpha = true;
   double TEnd = 1.0e9;
@@ -97,6 +98,8 @@ static Args ParseArgs(int argc, char** argv) {
       a.TRef = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--M-pns") && i+1 < argc)
       a.MPnsMsun = std::stod(argv[++i]);
+    else if (!strcmp(argv[i], "--no-wm-recoil"))
+      a.UseWmRecoil = false;
     else if (!strcmp(argv[i], "--no-gr"))
       a.UseGR = false;
     else if (!strcmp(argv[i], "--no-alpha"))
@@ -210,7 +213,9 @@ int main(int argc, char** argv) {
   NeutrinoReactionLibrary nuLib(
       SkyNetRoot + "/data/neutrino_reactions.dat",
       "Neutrino reactions", nuclib, opts,
-      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/true);
+      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/true,
+      args.UseWmRecoil ? NeutrinoCorrectionMode::WeakMagnetism
+                       : NeutrinoCorrectionMode::None);
 
   // Alpha burning (Beard+2017 medium-enhanced triple-alpha)
   // Be9Fac=1 (nominal), enhancement factors from RunSetup.cpp defaults
@@ -311,8 +316,9 @@ int main(int argc, char** argv) {
   printf("Evolving from NSE (Ye=%.4f) to t=%.3e s...\n", traj.Ye, args.TEnd);
   printf("  lbar-ratio = %.6f  L0_nue = %.3e erg/s  tau_d = %.1f s\n",
       args.LbarRatio, args.L0Nue, args.TauD);
-  printf("  T_nue = %.2f MeV  T_nuebar = %.2f MeV  GR blueshift: %s\n",
-      args.TNueMeV, args.TNuebarMeV, args.UseGR ? "on" : "off");
+  printf("  T_nue = %.2f MeV  T_nuebar = %.2f MeV  WM/recoil: %s  GR blueshift: %s\n",
+      args.TNueMeV, args.TNuebarMeV, args.UseWmRecoil ? "on" : "off",
+      args.UseGR ? "on" : "off");
   printf("  Late-time tails: T ∝ t^%.4f  ρ ∝ t^%.4f\n",
       args.T9Slope, args.RhoSlope);
 
