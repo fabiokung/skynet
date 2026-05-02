@@ -21,4 +21,5 @@ run/
 .pydevproject
 .settings/
 .cache/
+.env
 .vscode/
