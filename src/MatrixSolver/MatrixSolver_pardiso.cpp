@@ -120,7 +120,7 @@ MatrixSolver_pardiso::MatrixSolver_pardiso() :
     PardisoCheckError(mError);
   } catch (const std::exception& ex) {
     CleanUp();
-    throw ex;
+    throw;
   }
 
   // don't override with default values
