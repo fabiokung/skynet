@@ -4,7 +4,26 @@
 ///
 /// \brief νp-process driver following Friedland et al. 2025/2026.
 ///
+/// Usage:
+///   vp_process <trajectory_file> <output_prefix> [options]
 ///
+/// Options:
+///   --lbar-ratio R     L_nuebar / L_nue (default 1.0)
+///   --L0 L             Initial ν_e luminosity in erg/s (default 7e51)
+///   --T-nue T          ν_e temperature in MeV (default 4.0)
+///   --T-nuebar T       ν̄_e temperature in MeV (default 5.0)
+///   --eta-nue E        ν_e degeneracy parameter (default 0.0)
+///   --eta-nuebar E     ν̄_e degeneracy parameter (default 0.0)
+///   --tau-d T          Luminosity e-folding time in s (default 3.0)
+///   --t-ref T          Reference time for L(t) in s (default 1.0)
+///   --M-pns M          PNS mass in solar masses (default 1.4)
+///   --no-wm-recoil     Disable weak-magnetism/recoil correction
+///   --no-gr            Disable GR blueshift correction
+///   --no-alpha         Disable Beard+2017 enhanced triple-alpha
+///   --t-end T          End time in s (default 1e9)
+///   --max-dt T         Maximum network time step in s (default 1e-3)
+///   --rho-slope S      Power-law slope for ρ late-time tail (default -2)
+///   --T-slope S        Power-law slope for T late-time tail (default -0.6667)
 
 #include "BuildInfo.hpp"
 
@@ -63,7 +82,8 @@ struct Args {
   bool UseGR = true;
   bool UseAlpha = true;
   double TEnd = 1.0e9;
-  double RhoSlope = -3.0; // ρ ∝ t^RhoSlope for late-time tail
+  double MaxDt = 1.0e-3;
+  double RhoSlope = -2.0; // ρ ∝ t^RhoSlope for late-time tail
   double T9Slope = -2.0 / 3.0; // T ∝ t^T9Slope (adiabatic expansion)
   double TailBlend = 2.0;
 };
@@ -106,6 +126,8 @@ static Args ParseArgs(int argc, char** argv) {
       a.UseAlpha = false;
     else if (!strcmp(argv[i], "--t-end") && i+1 < argc)
       a.TEnd = std::stod(argv[++i]);
+    else if (!strcmp(argv[i], "--max-dt") && i+1 < argc)
+      a.MaxDt = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--rho-slope") && i+1 < argc)
       a.RhoSlope = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--T-slope") && i+1 < argc)
@@ -190,7 +212,7 @@ int main(int argc, char** argv) {
   opts.SmallestYUsedForErrorCalculation = 1.0e-20;
   opts.MaxDtChangeMultiplier = 2.0;
   opts.MinDt = 1.0e-16;
-  opts.MaxDt = 1.0e-3;
+  opts.MaxDt = args.MaxDt;
   opts.IsSelfHeating = false; // T(t) externally prescribed
   opts.EnableScreening = true;
 
@@ -321,6 +343,7 @@ int main(int argc, char** argv) {
       args.UseGR ? "on" : "off");
   printf("  Late-time tails: T ∝ t^%.4f  ρ ∝ t^%.4f\n",
       args.T9Slope, args.RhoSlope);
+  printf("  Max dt = %.3e s\n", args.MaxDt);
 
   net.EvolveFromNSE(
       hist.StartTime(), args.TEnd,
