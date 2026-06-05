@@ -12,6 +12,8 @@
 #include <functional>
 #include <memory>
 #include <limits>
+#include <stdexcept>
+#include <string>
 #include <valarray>
 #include <vector>
 

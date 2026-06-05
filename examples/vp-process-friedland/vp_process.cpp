@@ -30,7 +30,7 @@
 ///   --tail-blend T     Blend span in s into the power-law tail, must be < trajectory span (default: 1/3 of span)
 ///   --smallest-y-dt Y  Species with Y below this don't constrain the time step (default 1e-6)
 ///   --max-ychange Y    Max |dY/Y| per step on the dt-controlling species (default 0.1)
-///   --newton-crit M    Newton convergence criterion: mass|dyby|both (default mass)
+///   --newton-crit M    Newton convergence criterion: mass|dyby|both (default dyby)
 
 #include "BuildInfo.hpp"
 
@@ -84,10 +84,10 @@ struct Args {
   double Ye = 0.6;
   double LbarRatio = 1.0;
   double L0Nue = 7.0e51;
-  double TNueMeV = 2.67;
-  double TNuebarMeV = 3.39;
-  double EtaNue = 2.1;
-  double EtaNuebar = 1.5;
+  double TNueMeV = 2.6649665550;
+  double TNuebarMeV = 3.3917199590;
+  double EtaNue = 2.1003526050;
+  double EtaNuebar = 1.4947296660;
   double TauD = 3.0;
   double TRef = 1.0; // L(t)=L0*exp(-(t-t_ref)/tau_d)
   double MPnsMsun = 1.4;
@@ -98,7 +98,7 @@ struct Args {
   double MaxDt = 1.0e8;
   double SmallestYForDt = 1.0e-6; // species below this don't constrain dt; SkyNet's default
   double MaxYChange = 0.1; // max |dY/Y| per step on dt-controlling species
-  std::string NewtonCrit = "mass"; // Newton convergence: mass|dyby|both
+  std::string NewtonCrit = "dyby"; // Newton convergence: mass|dyby|both
   double RhoSlope = -2.0; // ρ ∝ t^RhoSlope for late-time tail
   double T9Slope = -2.0 / 3.0; // T ∝ t^T9Slope (adiabatic expansion)
   double TailBlend = 0.0; // 0 => auto: 1/3 of the trajectory time span
@@ -242,12 +242,18 @@ int main(int argc, char** argv) {
       args.NewtonCrit == "dyby" ? NetworkConvergenceCriterion::DeltaYByY
       : args.NewtonCrit == "both" ? NetworkConvergenceCriterion::BothDeltaYByYAndMass
       : NetworkConvergenceCriterion::Mass;
+  // dyby with SkyNet's 1e-10 default stalls the NSE->network handoff (dt collapses);
+  // 1e-5 is the workable tolerance the reference network uses.
+  opts.DeltaYByYThreshold = 1.0e-5;
   opts.SmallestYUsedForErrorCalculation = 1.0e-20;
   opts.MaxDtChangeMultiplier = 2.0;
   opts.MinDt = 1.0e-16;
   opts.MaxDt = args.MaxDt;
   opts.IsSelfHeating = false; // T(t) externally prescribed
   opts.EnableScreening = true;
+  // NSE<->network handoff band (SkyNet defaults are 7.0 / 1e16, i.e. NSE down to 7 GK)
+  opts.NSEEvolutionMinT9 = 9.0;
+  opts.NetworkEvolutionMaxT9 = 9.3;
 
   REACLIBReactionLibrary weakLib(
       SkyNetRoot + "/data/reaclib",
@@ -260,6 +266,20 @@ int main(int argc, char** argv) {
       ReactionType::Strong, true,
       LeptonMode::TreatAllAsDecayExceptLabelEC,
       "Strong reactions", nuclib, opts, true);
+
+  // Fission rate tables, separate from the main REACLIB set. A no-op for the
+  // A<=130 vp-process network, kept for parity with the full SkyNet network.
+  REACLIBReactionLibrary symFisLib(
+      SkyNetRoot + "/data/netsu_panov_symmetric_0neut",
+      ReactionType::Strong, false,
+      LeptonMode::TreatAllAsDecayExceptLabelEC,
+      "Symmetric neutron-induced fission (0 free neutrons)", nuclib, opts, false);
+
+  REACLIBReactionLibrary spontFisLib(
+      SkyNetRoot + "/data/netsu_sfis_Roberts2010rates",
+      ReactionType::Strong, false,
+      LeptonMode::TreatAllAsDecayExceptLabelEC,
+      "Spontaneous fission", nuclib, opts, false);
 
   // Neutrino reactions (ν_e n ↔ e⁻ p and ν̄_e p ↔ e⁺ n)
   // onlyNuCap=false: include both ν capture and e capture
@@ -292,7 +312,7 @@ int main(int argc, char** argv) {
 
   // Assemble reaction library list
   std::vector<const ReactionLibraryBase*> reactionLibs = {
-      &weakLib, &strongLib, &nuLib
+      &weakLib, &strongLib, &symFisLib, &spontFisLib, &nuLib
   };
   if (alphaLib)
     reactionLibs.push_back(alphaLib.get());
@@ -350,7 +370,11 @@ int main(int argc, char** argv) {
     const double t = nuTimes[i];
     const double r = nuRadii[i];
 
-    const double decay = std::exp(-std::max(t - args.TRef, 0.0) / args.TauD);
+    // clamp the decay exponent: below e^-100 the flux is dynamically negligible,
+    // and an unclamped exp() underflows to a subnormal in the late-time tail,
+    // which faults the GSL neutrino-rate integral.
+    const double decay =
+        std::exp(-std::min(std::max(t - args.TRef, 0.0) / args.TauD, 100.0));
     double lNue = args.L0Nue * decay;
     double lNuebar = lNue * args.LbarRatio;
     double t9Nue = t9NueBase;
