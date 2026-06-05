@@ -12,6 +12,7 @@ Debug*/
 debug/
 debug*/
 run/
+SkyNet_output*
 *~
 !Makefile
 !*.cmake

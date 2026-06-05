@@ -28,7 +28,8 @@
 struct NeutrinoCorrectionModeStruct {
   enum Value {
     None,
-    WeakMagnetism
+    WeakMagnetism,
+    WeakMagnetismExact
   };
 };
 

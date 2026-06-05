@@ -33,12 +33,35 @@ double WeakMagnetismCorrection(const double eNuMeV, const bool nueCap) {
   return std::max(0.0, 1.0 + coeff * eNuMeV / BaryonMassInMeV);
 }
 
+double WeakMagnetismExactCorrection(const double eNuMeV, const bool nueCap) {
+  // Charged-current recoil + weak-magnetism correction to all orders in
+  // e = E_nu/M, Horowitz, Phys. Rev. D 65, 043001 (2002), Eq. (22). The
+  // (1+2e)^3 denominator keeps R(k) positive at all energies, unlike the
+  // first-order form which goes negative for ν̄_e above ~50 MeV.
+  // Table I charged-current couplings: cV = 1, cA = g_A, F2 = κ_p - κ_n.
+  const double cV = 1.0, cA = 1.26, F2 = 3.706;
+  const double e = eNuMeV / BaryonMassInMeV;
+  const double interf = nueCap ? 1.0 : -1.0; // ± axial-vector interference
+  const double num = cV * cV * (1.0 + 4.0 * e + 16.0 / 3.0 * e * e)
+      + 3.0 * cA * cA * (1.0 + 4.0 / 3.0 * e) * (1.0 + 4.0 / 3.0 * e)
+      + interf * 4.0 * (cV + F2) * cA * e * (1.0 + 4.0 / 3.0 * e)
+      + 8.0 / 3.0 * cV * F2 * e * e
+      + 5.0 / 3.0 * e * e * (1.0 + 2.0 / 5.0 * e) * F2 * F2;
+  const double den = (cV * cV + 3.0 * cA * cA) * pow(1.0 + 2.0 * e, 3);
+  return num / den;
+}
+
 double CaptureCorrection(const double eNuMeV, const bool nueCap,
     const NeutrinoCorrectionMode correctionMode) {
-  if (correctionMode == NeutrinoCorrectionMode::None)
-    return 1.0;
-
-  return WeakMagnetismCorrection(eNuMeV, nueCap);
+  switch (correctionMode) {
+    case NeutrinoCorrectionMode::WeakMagnetism:
+      return WeakMagnetismCorrection(eNuMeV, nueCap);
+    case NeutrinoCorrectionMode::WeakMagnetismExact:
+      return WeakMagnetismExactCorrection(eNuMeV, nueCap);
+    case NeutrinoCorrectionMode::None:
+    default:
+      return 1.0;
+  }
 }
 
 std::function<double(double)> MakeECapFunc(const double scaledT,
@@ -127,12 +150,12 @@ NeutrinoReactionLibrary::NeutrinoReactionLibrary(const Neutrino neutrinoLib,
     nueCap.push_back(entry.IsNueReaction());
   }
 
-  if (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetism) {
+  if (mCorrectionMode != NeutrinoCorrectionMode::None) {
     for (auto wm : Wm) {
       if (wm != 0.0) {
-        throw std::runtime_error("WeakMagnetism correction mode cannot be "
-            "combined with non-zero neutrino reaction weak-magnetism "
-            "coefficients.");
+        throw std::runtime_error("Analytic weak-magnetism correction modes "
+            "cannot be combined with non-zero neutrino reaction "
+            "weak-magnetism coefficients.");
       }
     }
   }
@@ -152,9 +175,12 @@ void NeutrinoReactionLibrary::PrintAdditionalInfo(
     NetworkOutput * const pOutput) const {
   pOutput->Log("#   Only nu capture: %s\n", mOnlyNuCap ? "yes" : "no");
   pOutput->Log("#   Compute heating: %s\n", mNuHeating ? "yes" : "no");
-  pOutput->Log("#   Correction mode: %s\n",
-      (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetism)
-      ? "WeakMagnetism" : "None");
+  const char* modeName = "None";
+  if (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetism)
+    modeName = "WeakMagnetism";
+  else if (mCorrectionMode == NeutrinoCorrectionMode::WeakMagnetismExact)
+    modeName = "WeakMagnetismExact";
+  pOutput->Log("#   Correction mode: %s\n", modeName);
 }
 
 void NeutrinoReactionLibrary::DoLoopOverReactionData(

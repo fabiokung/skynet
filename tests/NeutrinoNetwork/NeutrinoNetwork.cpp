@@ -197,6 +197,9 @@ int main(int, char**) {
     NeutrinoReactionLibrary wmLib(lib, "Weak Magnetism Neutrino Reactions",
         nuclib, opts, true, false, false,
         NeutrinoCorrectionMode::WeakMagnetism);
+    NeutrinoReactionLibrary exactLib(lib, "All-orders Weak Magnetism Reactions",
+        nuclib, opts, true, false, false,
+        NeutrinoCorrectionMode::WeakMagnetismExact);
 
     ThermodynamicState thermoState(TGK, RHOGCC, 0.0, 0.0, 0.0, 0.5, 0.0,
         nuHist(0.0));
@@ -208,6 +211,8 @@ int main(int, char**) {
         opts.RateExpArgumentCap, nullptr, nullptr);
     wmLib.CalculateRates(thermoState, partitionFunctions,
         opts.RateExpArgumentCap, nullptr, nullptr);
+    exactLib.CalculateRates(thermoState, partitionFunctions,
+        opts.RateExpArgumentCap, nullptr, nullptr);
 
     for (unsigned int i = 0; i < defaultLib.InverseRates().size(); ++i) {
       if (fabs(defaultLib.InverseRates()[i] - noneLib.InverseRates()[i])
@@ -216,12 +221,17 @@ int main(int, char**) {
 
       // Consistency check with Horowitz, Phys. Rev. D 65, 043001 (2002).
       // Weak magnetism enhances neutrino capture rates and suppresses
-      // antineutrino capture rates.
+      // antineutrino capture rates. Both the first-order (Eq.24/25) and
+      // all-orders (Eq.22) factors share this sign.
       if (lib.Entries()[i].IsNueReaction()) {
         if (wmLib.InverseRates()[i] <= noneLib.InverseRates()[i])
           return EXIT_FAILURE;
+        if (exactLib.InverseRates()[i] <= noneLib.InverseRates()[i])
+          return EXIT_FAILURE;
       } else {
         if (wmLib.InverseRates()[i] >= noneLib.InverseRates()[i])
+          return EXIT_FAILURE;
+        if (exactLib.InverseRates()[i] >= noneLib.InverseRates()[i])
           return EXIT_FAILURE;
       }
     }
@@ -232,6 +242,8 @@ int main(int, char**) {
     noneLib.CalculateRates(thermoState, partitionFunctions,
         opts.RateExpArgumentCap, nullptr, nullptr);
     wmLib.CalculateRates(thermoState, partitionFunctions,
+        opts.RateExpArgumentCap, nullptr, nullptr);
+    exactLib.CalculateRates(thermoState, partitionFunctions,
         opts.RateExpArgumentCap, nullptr, nullptr);
 
     for (unsigned int i = 0; i < wmLib.InverseRates().size(); ++i) {
@@ -262,6 +274,61 @@ int main(int, char**) {
         std::cerr << "WeakMagnetism Horowitz qualitative check failed: "
             << "expected about 15.38% anti-neutrino reduction at k=20 MeV, "
             << "got " << reduction * 100.0 << "%." << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      // At 20 MeV (e = k/M ~ 0.02) the all-orders factor, Eq.(22), shares the
+      // linear term of the first-order form, Eq.(23) -> Eq.(24), so the two
+      // ν̄_e reductions agree to leading order. The residual ~1.5 percentage
+      // points is the genuine O(e²) correction.
+      const double exactReduction = 1.0 - exactLib.InverseRates()[i]
+          / uncorrectedRate;
+      if (fabs(exactReduction - reduction) > 2.5e-2) {
+        std::cerr << "All-orders weak magnetism check failed: exact and "
+            << "first-order ν̄_e reductions disagree at k=20 MeV ("
+            << exactReduction * 100.0 << "% vs " << reduction * 100.0 << "%)."
+            << std::endl;
+        return EXIT_FAILURE;
+      }
+
+      // The all-orders factor cures the over-suppression of the linear form:
+      // the ν̄_e capture rate stays higher than the first-order rate at every
+      // energy (the O(e²) terms partially offset the negative linear term).
+      if (!(exactLib.InverseRates()[i] > wmLib.InverseRates()[i])) {
+        std::cerr << "All-orders weak magnetism check failed: exact ν̄_e rate "
+            << "should exceed the first-order rate at k=20 MeV." << std::endl;
+        return EXIT_FAILURE;
+      }
+    }
+
+    // High-energy positivity. The first-order ν̄_e factor 1 - 7.22 k/m goes
+    // negative above k ~ 130 MeV and is clamped to zero (Horowitz notes Eq.24
+    // fails above ~50 MeV), so a spectrum weighted toward high energy drives
+    // the first-order rate to near zero. The all-orders Eq.(22) stays strictly
+    // positive. Peak at 140 MeV with a 40 MeV width — wide enough that the GSL
+    // semi-infinite quadrature actually samples the high-energy peak.
+    auto broadHighDist = std::shared_ptr<NeutrinoDistribution>(
+        new NarrowNeutrinoDistribution(140.0, 40.0, 1.0));
+    thermoState.SetNeutrinoDistribution(broadHighDist);
+    wmLib.CalculateRates(thermoState, partitionFunctions,
+        opts.RateExpArgumentCap, nullptr, nullptr);
+    exactLib.CalculateRates(thermoState, partitionFunctions,
+        opts.RateExpArgumentCap, nullptr, nullptr);
+
+    for (unsigned int i = 0; i < exactLib.InverseRates().size(); ++i) {
+      if (lib.Entries()[i].IsNueReaction())
+        continue;
+      if (!(exactLib.InverseRates()[i] > 0.0)) {
+        std::cerr << "All-orders weak magnetism check failed: exact ν̄_e rate "
+            << "must stay positive for a high-energy spectrum, got "
+            << exactLib.InverseRates()[i] << "." << std::endl;
+        return EXIT_FAILURE;
+      }
+      if (!(exactLib.InverseRates()[i] > wmLib.InverseRates()[i])) {
+        std::cerr << "All-orders weak magnetism check failed: exact ν̄_e rate "
+            << "must exceed the clamped first-order rate for a high-energy "
+            << "spectrum (" << exactLib.InverseRates()[i] << " vs "
+            << wmLib.InverseRates()[i] << ")." << std::endl;
         return EXIT_FAILURE;
       }
     }
