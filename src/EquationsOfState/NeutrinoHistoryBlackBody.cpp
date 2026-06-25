@@ -6,6 +6,8 @@
 ///
 ///
 
+#include <gsl/gsl_sf_fermi_dirac.h>
+
 #include "EquationsOfState/NeutrinoHistoryBlackBody.hpp"
 
 std::shared_ptr<NeutrinoDistribution> NeutrinoHistoryBlackBody::operator()(
@@ -14,25 +16,32 @@ std::shared_ptr<NeutrinoDistribution> NeutrinoHistoryBlackBody::operator()(
   auto eta = mEtaVsTime(time);
   auto Lnu = mLVsTime(time);
 
-  const double BBconst = 7.0 * pow(Constants::Pi, 3) / 240.0
-      * Constants::ErgPerMeV
-      / pow(Constants::ReducedPlanckConstantInMeVSec, 3)
-      / pow(Constants::SpeedOfLightInCmPerSec, 2);
-
   // need cast to double to avoid linking error in debug mode
   std::valarray<double> TInMeV = T9
       * (double)Constants::BoltzmannConstantInMeVPerGK;
-  std::valarray<double> rnu = sqrt(Lnu / BBconst / pow(TInMeV, 4.0));
 
   std::valarray<double> norm(mSpecies.size());
+  std::valarray<double> BBconst(mSpecies.size());
+  std::valarray<double> rnu(mSpecies.size());
   double radius = mRadiusVsTime(time);
 
   for (unsigned int i = 0; i < mSpecies.size(); i++) {
+    // The energy flux of a pinched Fermi-Dirac spectrum scales with F_3(eta),
+    // so the blackbody constant must be eta-dependent; using the eta = 0 value
+    // (7 pi^3 / 240) overestimates the number flux for eta > 0 (6.6x at
+    // eta = 2.1, 3.9x at eta = 1.5).
+    BBconst[i] = 0.5 / Constants::Pi * tgamma(4.0)
+        * gsl_sf_fermi_dirac_int(3, eta[i])
+        * Constants::ErgPerMeV
+        / pow(Constants::ReducedPlanckConstantInMeVSec, 3)
+        / pow(Constants::SpeedOfLightInCmPerSec, 2);
+    rnu[i] = sqrt(Lnu[i] / BBconst[i] / pow(TInMeV[i], 4.0));
+
     // This function returns the integration over solid angle for a distribution
     // function with a minimum mu cutoff normalized by four pi.  This is the
     // expectation for blackbody emitting sphere.
-    if (mPointSource) { 
-      norm[i] = Lnu[i] / (pow(TInMeV[i], 4) * pow(radius, 2) * 4.0 * BBconst);  
+    if (mPointSource) {
+      norm[i] = Lnu[i] / (pow(TInMeV[i], 4) * pow(radius, 2) * 4.0 * BBconst[i]);
     } else if (rnu[i] * rnu[i] <= radius * radius) {
       norm[i] = 0.5 - 0.5 * sqrt(1.0 - rnu[i] * rnu[i] / (radius * radius));
     } else {
