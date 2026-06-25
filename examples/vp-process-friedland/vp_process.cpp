@@ -44,7 +44,7 @@
 #include <string>
 #include <vector>
 
-#include "DensityProfiles/PowerLawContinuation.hpp"
+#include "Utilities/Interpolators/PiecewiseLinearFunction.hpp"
 #include "EquationsOfState/HelmholtzEOS.hpp"
 #include "EquationsOfState/NeutrinoHistoryBlackBody.hpp"
 #include "EquationsOfState/SkyNetScreening.hpp"
@@ -344,29 +344,25 @@ int main(int argc, char** argv) {
       NeutrinoSpecies::NuE, NeutrinoSpecies::AntiNuE
   };
 
-  // The neutrino history must span the whole evolution [t0, TEnd], but the tracer
-  // ends at traj.Times.back(). L(t), T9 and eta are analytic in t and extend on
-  // their own; only the radius needs continuing, because the point-source flux
-  // seen by the parcel scales as 1/r^2. By the tracer's end the parcel has left
-  // the acceleration region and coasts at its asymptotic wind velocity, so we
-  // continue it ballistically, r(t) = r_end + v_end*(t - t_end) -- the outflow
-  // behaviour assumed in Friedland et al. (2026). The residual ν flux this far
-  // out is a small correction; alternative continuations (holding r fixed, or
-  // homologous r ∝ t) barely move the final yields.
+  // Only the radius needs continuing past the tracer end (L, T9, eta are
+  // analytic): the point-source flux scales as 1/r^2. Homologous expansion
+  // (r ∝ t, App. G) is referenced to bounce, so the radius is anchored in
+  // absolute post-bounce time (t + TimeOffset) -- not coasted at the parcel's
+  // terminal velocity, which would put it too far out and starve the tail flux.
   std::vector<double> nuTimes = traj.Times;
   std::vector<double> nuRadii = traj.Radius;
   const double tLast = traj.Times.back();
+  const double tLastAbs = tLast + traj.TimeOffset;
   const double tGridEnd = args.TEnd * 1.01; // cover steps that probe just past TEnd
   if (tGridEnd > tLast) {
     const double rLast = traj.Radius.back();
-    const double vLast = traj.Vel.back();
     const int nExt = 300;
     const double ratio = std::pow(tGridEnd / tLast, 1.0 / nExt);
     double t = tLast;
     for (int k = 0; k < nExt; ++k) {
       t *= ratio;
       nuTimes.push_back(t);
-      nuRadii.push_back(rLast + vLast * (t - tLast));
+      nuRadii.push_back(rLast * (t + traj.TimeOffset) / tLastAbs);
     }
   }
 
@@ -419,21 +415,37 @@ int main(int argc, char** argv) {
       traj.Times.back(),
       traj.Times, traj.TGK, traj.Rho);
 
-  // Beyond the trajectory end, extrapolate with power-law tails.
-  // PowerLawContinuation blends smoothly from the data into the power law over
-  // the last tailBlend seconds; the blend span must be shorter than the data.
-  const double trajSpan = traj.Times.back() - traj.Times.front();
-  const double tailBlend =
-      args.TailBlend > 0.0 ? args.TailBlend : trajSpan / 3.0;
-  if (tailBlend >= trajSpan)
-    throw std::runtime_error(
-        "--tail-blend must be smaller than the trajectory span ("
-        + std::to_string(trajSpan) + " s)");
+  // Extend T(t) and rho(t) past the trajectory with power-law tails. Appending
+  // power-law points and interpolating the whole series (PiecewiseLinearFunction)
+  // keeps every tabulated point exact; SkyNet's PowerLawContinuation instead
+  // least-squares-fits the tail offset over a blend window, which pulls the last
+  // ~0.5 s of real data off the trajectory and into the active vp-process window.
+  std::vector<double> tailTimes = traj.Times;
+  std::vector<double> tailT9 = traj.TGK;
+  std::vector<double> tailRho = traj.Rho;
+  // The homologous power laws (T ~ t^-2/3, rho ~ t^-2, App. G) are referenced to
+  // bounce, so their argument is absolute post-bounce time (t + TimeOffset)
+  // anchored at the trajectory's absolute end. Anchoring at the re-zeroed endpoint
+  // the rest of the driver runs on (~t_launch earlier) would make the tail decline
+  // far too fast.
+  const double tEndAbs = traj.Times.back() + traj.TimeOffset;
+  const double t9LastTraj = traj.TGK.back();
+  const double rhoLastTraj = traj.Rho.back();
+  const double tFinAbs = 2.0 * args.TEnd;
+  if (tFinAbs > tEndAbs) {
+    const int nExt = 1000;
+    const double ratio = std::pow(tFinAbs / tEndAbs, 1.0 / (nExt - 1));
+    double tAbs = tEndAbs;
+    for (int k = 1; k < nExt; ++k) {
+      tAbs *= ratio;
+      tailTimes.push_back(tAbs - traj.TimeOffset);
+      tailT9.push_back(t9LastTraj * std::pow(tAbs / tEndAbs, args.T9Slope));
+      tailRho.push_back(rhoLastTraj * std::pow(tAbs / tEndAbs, args.RhoSlope));
+    }
+  }
 
-  PowerLawContinuation t9WithTail(hist.TemperatureVsTime(),
-      args.T9Slope, tailBlend);
-  PowerLawContinuation rhoWithTail(hist.DensityVsTime(),
-      args.RhoSlope, tailBlend);
+  PiecewiseLinearFunction t9WithTail(tailTimes, tailT9, true);
+  PiecewiseLinearFunction rhoWithTail(tailTimes, tailRho, true);
 
   printf("Evolving from NSE (Ye=%.4f) to t=%.3e s...\n", traj.Ye, args.TEnd);
   printf("  lbar-ratio = %.6f  L0_nue = %.3e erg/s  tau_d = %.1f s\n",
