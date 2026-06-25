@@ -42,7 +42,12 @@ int main(int argc, char** argv) {
   double timeStep = 0.02;
   double tFinal = out.Times()[out.Times().size() - 1];
   //double tFinal = 1.0E9;
-  MovieData movieData(out, std::max(1.0E-3, out.Times()[0]), tFinal, timeStep);
+  // Nudge the first frame just inside the data: starting exactly at Times()[0]
+  // makes the opening frame query the interpolator at its lower bound, which
+  // fails on the log/exp round-trip when a run starts at t > 1e-3 (e.g. an NSE
+  // start truncated to ~2.5 MeV, t ~ 0.04 s).
+  double tStart = std::max(1.0E-3, out.Times()[0] * (1.0 + 1.0e-9));
+  MovieData movieData(out, tStart, tFinal, timeStep);
   NucleiChart chart(movieData, pColorScale, abundanceScale, rootPath);
 
 //  chart.DrawFrame(0, rootPath, 0);
