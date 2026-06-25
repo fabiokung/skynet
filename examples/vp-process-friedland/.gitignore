@@ -1,2 +1,3 @@
 runs/
 trajectories/*.txt
+!trajectories/traj_NW_t0_2.5s.txt

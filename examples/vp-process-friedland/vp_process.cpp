@@ -65,11 +65,6 @@ static constexpr double GCgs   = 6.67430e-8;  // cm^3 g^-1 s^-2
 static constexpr double MsunG  = 1.98892e33;  // g
 static constexpr double RRefCm = 5.0e7;       // 500 km reference radius
 
-// Tracer (SI) -> SkyNet (CGS/GK) unit conversions.
-static constexpr double MToCm      = 100.0;   // m -> cm
-static constexpr double KgM3ToGCm3 = 1.0e-3;  // kg/m^3 -> g/cm^3
-static constexpr double JToMeV     = 1.0e7 / Constants::ErgPerMeV;
-
 // Computes Phi(r) = sqrt((1 - 2GM/R_ref) / (1 - 2GM/r))
 // Phi > 1 for r < R_ref (blueshift toward PNS), Phi < 1 for r > R_ref.
 static double GrBlueshift(const double rCm, const double gmOverC2) {
@@ -176,16 +171,20 @@ static Args ParseArgs(int argc, char** argv) {
   return a;
 }
 
-// Tracer-particle trajectory in SI units, one row per time, whitespace-separated.
-// Lines starting with '#' are comments. Six columns, in order:
-//   time[s]  radius[m]  velocity[m/s]  kT[J]  entropy[k_B/baryon]  rho[kg/m^3]
-// Entropy is read but unused; velocity is kept to coast the radius past the
-// trajectory end for the neutrino flux. Ye is not in the file; it is supplied
-// via --ye. Stored fields are converted to SkyNet units (GK, cm, cm/s, g/cm^3)
-// on read so the rest of the driver works in CGS/GK throughout.
+// Tracer-particle trajectory: the 18-column CGS/MeV NW outflow file, one row per
+// time, whitespace-separated, '#' comments. Columns:
+//   time[s] radius[cm] T[MeV] rho[g/cm^3] vel[cm/s] Ye s[k_B] Mdot[Msun/s]
+//   Lnue[erg/s] <E>nue[MeV] Erms_nue[MeV] alpha_nue
+//   Lnuebar[erg/s] <E>nuebar[MeV] Erms_nuebar[MeV] alpha_nuebar r_rho11[cm] Mgrav[Msun]
+//
+// Time is post-bounce. Only time, radius, T and rho are consumed (velocity is
+// parsed but unused; the tail radius is continued homologously, not coasted). The
+// tabulated Lnu and spectra reproduce the analytic --L0/--T-nue/--eta history
+// exactly (verified) and Ye is constant = --ye. The time axis is re-zeroed to
+// time-since-launch (see ReadTrajectory).
 struct Trajectory {
   double Ye = 0.0;
-  double TimeOffset = 0.0; // original first time, subtracted so evolution starts at t=0
+  double TimeOffset = 0.0; // original first time (post-bounce launch), subtracted on re-zero
   std::vector<double> Times;
   std::vector<double> TGK;
   std::vector<double> Rho;
@@ -198,6 +197,8 @@ static Trajectory ReadTrajectory(const std::string& path) {
   if (!ifs.is_open())
     throw std::runtime_error("Cannot open trajectory file: " + path);
 
+  const double kbMeVPerGK = Constants::BoltzmannConstantInMeVPerGK;
+
   Trajectory traj;
   std::string line;
 
@@ -206,24 +207,29 @@ static Trajectory ReadTrajectory(const std::string& path) {
     if (first == std::string::npos || line[first] == '#') continue;
 
     std::istringstream iss(line);
-    double t, rMeters, vel, kTJoule, entropy, rhoSI;
-    if (!(iss >> t >> rMeters >> vel >> kTJoule >> entropy >> rhoSI))
-      throw std::runtime_error("Malformed trajectory row in " + path + ": " + line);
-
+    double t, rCm, tMeV, rhoCgs, velCgs, ye, entropy, mdot;
+    double lNue, eNue, eRmsNue, aNue, lNub, eNub, eRmsNub, aNub, rRho11, mGrav;
+    if (!(iss >> t >> rCm >> tMeV >> rhoCgs >> velCgs >> ye >> entropy >> mdot
+              >> lNue >> eNue >> eRmsNue >> aNue
+              >> lNub >> eNub >> eRmsNub >> aNub >> rRho11 >> mGrav))
+      throw std::runtime_error("Malformed 18-column trajectory row in " + path + ": " + line);
     traj.Times.push_back(t);
-    traj.TGK.push_back(kTJoule * JToMeV / Constants::BoltzmannConstantInMeVPerGK);
-    traj.Rho.push_back(rhoSI * KgM3ToGCm3);
-    traj.Radius.push_back(rMeters * MToCm);
-    traj.Vel.push_back(vel * MToCm);
+    traj.TGK.push_back(tMeV / kbMeVPerGK);
+    traj.Rho.push_back(rhoCgs);
+    traj.Radius.push_back(rCm);
+    traj.Vel.push_back(velCgs);
   }
 
   if (traj.Times.empty())
     throw std::runtime_error("Trajectory file contains no data");
 
-  // Re-zero the time axis so the network evolves from t=0. On a raw axis whose
-  // first time is order seconds, a sub-ulp first step makes t + dt == t and
-  // locks the start at dt = 0. TimeOffset keeps the original start time so the
-  // late-time tails can be anchored in absolute time (see main).
+  // Re-zero the time axis so the network evolves from t=0. The file's time is
+  // post-bounce (t0 = t_launch); re-zeroing also keeps the first dt above the ulp
+  // of the start time -- on a raw axis (t0 ~ 1-2.5 s) a sub-ulp first step makes
+  // t + dt == t and locks the NSE start at dt = 0. L(t) per Friedland 2026 eq. 5.5
+  // maps to this axis via --t-ref -(t_launch - t0). TimeOffset keeps the original
+  // launch time so the homologous tail can be anchored in absolute post-bounce
+  // time (see main).
   const double t0 = traj.Times.front();
   traj.TimeOffset = t0;
   for (auto& t : traj.Times) t -= t0;

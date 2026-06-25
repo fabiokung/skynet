@@ -24,3 +24,4 @@ SkyNet_output*
 .cache/
 .env
 .vscode/
+.DS_Store
