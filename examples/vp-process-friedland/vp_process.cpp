@@ -27,7 +27,8 @@
 ///   --max-dt T         Maximum network time step in s (default 1e8)
 ///   --rho-slope S      Power-law slope for ρ late-time tail (default -2)
 ///   --T-slope S        Power-law slope for T late-time tail (default -0.6667)
-///   --tail-blend T     Blend span in s into the power-law tail, must be < trajectory span (default: 1/3 of span)
+///   --t-start-mev T    Start NSE at this temperature, dropping hotter leading rows
+///                      (Friedland App.G; default 2.5; 0 = trajectory start)
 ///   --smallest-y-dt Y  Species with Y below this don't constrain the time step (default 1e-6)
 ///   --max-ychange Y    Max |dY/Y| per step on the dt-controlling species (default 0.1)
 ///   --newton-crit M    Newton convergence criterion: mass|dyby|both (default dyby)
@@ -101,7 +102,7 @@ struct Args {
   std::string NewtonCrit = "dyby"; // Newton convergence: mass|dyby|both
   double RhoSlope = -2.0; // ρ ∝ t^RhoSlope for late-time tail
   double T9Slope = -2.0 / 3.0; // T ∝ t^T9Slope (adiabatic expansion)
-  double TailBlend = 0.0; // 0 => auto: 1/3 of the trajectory time span
+  double TStartMeV = 2.5; // start NSE here (Friedland App.G); 0 => trajectory start
 };
 
 static Args ParseArgs(int argc, char** argv) {
@@ -155,8 +156,8 @@ static Args ParseArgs(int argc, char** argv) {
       a.RhoSlope = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--T-slope") && i+1 < argc)
       a.T9Slope = std::stod(argv[++i]);
-    else if (!strcmp(argv[i], "--tail-blend") && i+1 < argc)
-      a.TailBlend = std::stod(argv[++i]);
+    else if (!strcmp(argv[i], "--t-start-mev") && i+1 < argc)
+      a.TStartMeV = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--smallest-y-dt") && i+1 < argc)
       a.SmallestYForDt = std::stod(argv[++i]);
     else if (!strcmp(argv[i], "--max-ychange") && i+1 < argc)
@@ -237,9 +238,29 @@ int main(int argc, char** argv) {
   Trajectory traj = ReadTrajectory(args.TrajFile);
   traj.Ye = args.Ye;
 
-  printf("Trajectory: %s  Ye=%.4f  N=%zu  t=[%.3e, %.3e] s\n",
+  // Start NSE at the published T ~ 2.5 MeV (Friedland et al. App. G) by dropping
+  // the hotter leading rows. The parcel is in NSE throughout this range, so the
+  // skipped segment only changes how long we sit in NSE evolution before the
+  // network handoff; the time axis stays launch-referenced so the L(t) mapping
+  // (--t-ref) is unchanged.
+  if (args.TStartMeV > 0.0) {
+    const double t9Start = args.TStartMeV
+        / Constants::BoltzmannConstantInMeVPerGK;
+    std::size_t i0 = 0;
+    while (i0 + 1 < traj.TGK.size() && traj.TGK[i0] > t9Start) ++i0;
+    if (i0 > 0) {
+      traj.Times.erase(traj.Times.begin(), traj.Times.begin() + i0);
+      traj.TGK.erase(traj.TGK.begin(), traj.TGK.begin() + i0);
+      traj.Rho.erase(traj.Rho.begin(), traj.Rho.begin() + i0);
+      traj.Radius.erase(traj.Radius.begin(), traj.Radius.begin() + i0);
+      traj.Vel.erase(traj.Vel.begin(), traj.Vel.begin() + i0);
+    }
+  }
+
+  printf("Trajectory: %s  Ye=%.4f  N=%zu  t=[%.3e, %.3e] s  T0=%.3f MeV\n",
       args.TrajFile.c_str(), traj.Ye,
-      traj.Times.size(), traj.Times.front(), traj.Times.back());
+      traj.Times.size(), traj.Times.front(), traj.Times.back(),
+      traj.TGK.front() * Constants::BoltzmannConstantInMeVPerGK);
 
   auto nuclib = NuclideLibrary::CreateFromWebnucleoXML(
       SkyNetRoot + "/data/webnucleo_nuc_v2.0.xml");
