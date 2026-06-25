@@ -184,6 +184,7 @@ static Args ParseArgs(int argc, char** argv) {
 // on read so the rest of the driver works in CGS/GK throughout.
 struct Trajectory {
   double Ye = 0.0;
+  double TimeOffset = 0.0; // original first time, subtracted so evolution starts at t=0
   std::vector<double> Times;
   std::vector<double> TGK;
   std::vector<double> Rho;
@@ -217,6 +218,14 @@ static Trajectory ReadTrajectory(const std::string& path) {
 
   if (traj.Times.empty())
     throw std::runtime_error("Trajectory file contains no data");
+
+  // Re-zero the time axis so the network evolves from t=0. On a raw axis whose
+  // first time is order seconds, a sub-ulp first step makes t + dt == t and
+  // locks the start at dt = 0. TimeOffset keeps the original start time so the
+  // late-time tails can be anchored in absolute time (see main).
+  const double t0 = traj.Times.front();
+  traj.TimeOffset = t0;
+  for (auto& t : traj.Times) t -= t0;
 
   return traj;
 }
