@@ -289,13 +289,13 @@ int main(int argc, char** argv) {
       SkyNetRoot + "/data/reaclib",
       ReactionType::Weak, false,
       LeptonMode::TreatAllAsDecayExceptLabelEC,
-      "Weak reactions", nuclib, opts, true);
+      "Weak reactions", nuclib, opts, false);
 
   REACLIBReactionLibrary strongLib(
       SkyNetRoot + "/data/reaclib",
       ReactionType::Strong, true,
       LeptonMode::TreatAllAsDecayExceptLabelEC,
-      "Strong reactions", nuclib, opts, true);
+      "Strong reactions", nuclib, opts, false);
 
   // Fission rate tables, separate from the main REACLIB set. A no-op for the
   // A<=130 vp-process network, kept for parity with the full SkyNet network.
@@ -318,7 +318,7 @@ int main(int argc, char** argv) {
   NeutrinoReactionLibrary nuLib(
       SkyNetRoot + "/data/neutrino_reactions.dat",
       "Neutrino reactions", nuclib, opts,
-      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/true,
+      /*onlyNuCap=*/false, /*nuHeating=*/false, /*includeBeta=*/false,
       args.WmMode == "exact" ? NeutrinoCorrectionMode::WeakMagnetismExact
           : args.WmMode == "first" ? NeutrinoCorrectionMode::WeakMagnetism
           : NeutrinoCorrectionMode::None);
@@ -330,7 +330,7 @@ int main(int argc, char** argv) {
     alphaLib = std::unique_ptr<SpecialReactionLibrary>(
         new SpecialReactionLibrary(
             AlphaBurning::GetRates(nuclib, /*enhanced=*/true,
-                /*Be9Fac=*/1.0, /*enhancePEnhance=*/1.0, /*enhanceNEnhance=*/1.0),
+                /*Be9Fac=*/0.5, /*enhancePEnhance=*/1.0, /*enhanceNEnhance=*/1.0),
             ReactionType::Strong, "Beard+2017 enhanced triple-alpha",
             "Beard+2017", nuclib, opts));
     // Remove alpha-burning reactions from strongLib to avoid double-counting
@@ -342,10 +342,12 @@ int main(int argc, char** argv) {
 
   // Assemble reaction library list
   std::vector<const ReactionLibraryBase*> reactionLibs = {
-      &weakLib, &strongLib, &symFisLib, &spontFisLib, &nuLib
+      &strongLib, &symFisLib, &spontFisLib, &weakLib,
   };
-  if (alphaLib)
+  if (alphaLib) {
     reactionLibs.push_back(alphaLib.get());
+  }
+  reactionLibs.push_back(&nuLib);
 
   HelmholtzEOS helmEOS(SkyNetRoot + "/data/helm_table.dat");
   SkyNetScreening screen(nuclib);
