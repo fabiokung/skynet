@@ -126,6 +126,17 @@ std::function<double(double)> MakeDecayFunc(const double scaledT,
             * (1.0 - distributionFunction(eNuMeV));
       };
 }
+
+// A distribution that marks integration failures fatal must not have its rate
+// silently zeroed here, where the swallowing catch otherwise would.
+void ThrowIfIntegrationFatal(const NeutrinoDistribution& nuDist,
+    const char* which) {
+  if (nuDist.IntegrationFailureIsFatal())
+    throw std::runtime_error(std::string(which) + " rate integration did not "
+        "converge for a neutrino distribution that marks this fatal, so the "
+        "rate is not being silently zeroed. Check the distribution's numerical "
+        "resolution (e.g. refine a tabulated spectrum's energy grid).");
+}
 } // namespace [unnamed]
 
 NeutrinoReactionLibrary::NeutrinoReactionLibrary(const Neutrino neutrinoLib,
@@ -207,7 +218,10 @@ void NeutrinoReactionLibrary::DoCalculateRates(
     return;
   }
 
-  FunctionIntegrator integrator;
+  std::shared_ptr<NeutrinoDistribution> nuDist =
+      thermoState.GetNeutrinoDistribution();
+
+  FunctionIntegrator integrator(1024, 0.0, nuDist->IntegrationRelativeError());
 
   // Define the forward function
   //double eScale    = std::max(Constants::ElectronMassInMeV,
@@ -221,9 +235,6 @@ void NeutrinoReactionLibrary::DoCalculateRates(
   // Electron chemical degeneracy parameter corrected for the electron rest mass
   double etae = thermoState.EtaElectron() + Constants::ElectronMassInMeV
       / (thermoState.T9() * Constants::BoltzmannConstantInMeVPerGK);
-
-  std::shared_ptr<NeutrinoDistribution> nuDist =
-      thermoState.GetNeutrinoDistribution();
 
   // Calculate the neutrino "luminosity" for consistency check
   // Should deviate from the actual luminosity since the quantity
@@ -292,14 +303,16 @@ void NeutrinoReactionLibrary::DoCalculateRates(
           ecapHeatInt = 0.0;
         }
       } catch (int e) {
+        ThrowIfIntegrationFatal(*nuDist, "Electron capture");
         ecapInt = 0.0;
         ecapHeatInt = 0.0;
-        std::cerr << "Electron capture integration error " << e <<  
+        std::cerr << "Electron capture integration error " << e <<
             Reactions()[i].String() << std::endl;
       } catch (...) {
+        ThrowIfIntegrationFatal(*nuDist, "Electron capture");
         ecapInt = 0.0;
         ecapHeatInt = 0.0;
-        std::cerr << "Electron capture integration error " << 
+        std::cerr << "Electron capture integration error " <<
             Reactions()[i].String() << std::endl;
       }
       mRates[i] = mMatrixElement[i] * rate_const * ecapInt;
@@ -327,10 +340,12 @@ void NeutrinoReactionLibrary::DoCalculateRates(
         nucapHeatInt = 0.0;
       }
     } catch (int e) {
+      ThrowIfIntegrationFatal(*nuDist, "Neutrino capture");
       nucapInt = 0.0;
       nucapHeatInt = 0.0;
       std::cerr << "Neutrino capture integration error " << e << std::endl;
     } catch (...) {
+      ThrowIfIntegrationFatal(*nuDist, "Neutrino capture");
       nucapInt = 0.0;
       nucapHeatInt = 0.0;
       std::cerr << "Neutrino capture integration error " << std::endl;

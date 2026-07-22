@@ -74,11 +74,29 @@ public:
   virtual std::function<double(double)> DistributionFunction(
       const NeutrinoSpecies species) const =0;
 
+  // Relative accuracy the rate integrals over this distribution can be
+  // required to reach. An analytic distribution supports whatever the
+  // quadrature can deliver; a tabulated one is only defined to the accuracy of
+  // its own interpolation, and demanding more makes the adaptive integrator
+  // fail with a roundoff error instead of returning its (converged) result.
+  virtual double IntegrationRelativeError() const {
+    return 1.0e-12;
+  }
+
+  // When a rate integral fails to converge, the reaction library zeroes the
+  // rate -- fine for an analytic distribution, whose integrals can genuinely
+  // fail for extreme parameters. A tabulated distribution's integral fails only
+  // when its grid is too coarse to resolve the spectrum, a setup error that
+  // must not be silently zeroed, so it makes the failure fatal instead.
+  virtual bool IntegrationFailureIsFatal() const {
+    return false;
+  }
+
   double LocalT9() const {
     return mLocalTMeV;
   }
 
-  void SetLocalT9(const double T9) {
+  virtual void SetLocalT9(const double T9) {
     mLocalTMeV = T9 * Constants::BoltzmannConstantInMeVPerGK;
   }
 

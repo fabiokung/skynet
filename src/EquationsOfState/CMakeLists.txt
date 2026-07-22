@@ -5,6 +5,9 @@ set(EquationsOfState_SOURCES
   NeutrinoDistributionFermiDirac.cpp
   NeutrinoHistoryFermiDirac.cpp
   NeutrinoHistoryBlackBody.cpp
+  TabulatedNeutrinoSpectrum.cpp
+  NeutrinoDistributionTabulated.cpp
+  NeutrinoHistoryTabulated.cpp
   SkyNetScreening.cpp
 )
 
@@ -27,6 +30,11 @@ set(EquationsOfState_SWIG_DEPS
   NeutrinoHistoryFermiDirac.hpp
   NeutrinoHistoryBlackBody.i
   NeutrinoHistoryBlackBody.hpp
+  TabulatedNeutrinoSpectrum.hpp
+  NeutrinoDistributionTabulated.i
+  NeutrinoDistributionTabulated.hpp
+  NeutrinoHistoryTabulated.i
+  NeutrinoHistoryTabulated.hpp
 )
 
 add_SWIG_dependencies("${EquationsOfState_SWIG_DEPS}")

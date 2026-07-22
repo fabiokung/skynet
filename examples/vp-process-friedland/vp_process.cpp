@@ -48,6 +48,7 @@
 #include "Utilities/Interpolators/PiecewiseLinearFunction.hpp"
 #include "EquationsOfState/HelmholtzEOS.hpp"
 #include "EquationsOfState/NeutrinoHistoryBlackBody.hpp"
+#include "EquationsOfState/NeutrinoHistoryTabulated.hpp"
 #include "EquationsOfState/SkyNetScreening.hpp"
 #include "Network/NetworkOptions.hpp"
 #include "Network/ReactionNetwork.hpp"
@@ -60,6 +61,7 @@
 #include "Utilities/FloatingPointExceptions.hpp"
 
 #include "AlphaBurning.hpp"
+#include "SpectralTrajectory.hpp"
 
 static constexpr double GCgs   = 6.67430e-8;  // cm^3 g^-1 s^-2
 static constexpr double MsunG  = 1.98892e33;  // g
@@ -190,6 +192,10 @@ struct Trajectory {
   std::vector<double> Rho;
   std::vector<double> Radius;
   std::vector<double> Vel;
+  // empty unless the file carries tabulated spectra; NuSpectra is
+  // [time][species][energy] with species = {nu_e, nu_e-bar}
+  std::vector<double> NuEnergiesMeV;
+  std::vector<std::vector<std::vector<double>>> NuSpectra;
 };
 
 static Trajectory ReadTrajectory(const std::string& path) {
@@ -200,11 +206,17 @@ static Trajectory ReadTrajectory(const std::string& path) {
   const double kbMeVPerGK = Constants::BoltzmannConstantInMeVPerGK;
 
   Trajectory traj;
+  SpectrumHeader spectrum;
   std::string line;
 
   while (std::getline(ifs, line)) {
     const auto first = line.find_first_not_of(" \t\r\n");
-    if (first == std::string::npos || line[first] == '#') continue;
+    if (first == std::string::npos) continue;
+
+    if (line[first] == '#') {
+      ParseSpectrumHeaderLine(line, &spectrum);
+      continue;
+    }
 
     std::istringstream iss(line);
     double t, rCm, tMeV, rhoCgs, velCgs, ye, entropy, mdot;
@@ -218,10 +230,28 @@ static Trajectory ReadTrajectory(const std::string& path) {
     traj.Rho.push_back(rhoCgs);
     traj.Radius.push_back(rCm);
     traj.Vel.push_back(velCgs);
+
+    if (spectrum.Present)
+      traj.NuSpectra.push_back(ReadSpectrumRow(iss, spectrum));
   }
 
   if (traj.Times.empty())
     throw std::runtime_error("Trajectory file contains no data");
+
+  if (spectrum.Present) {
+    traj.NuEnergiesMeV = spectrum.EnergiesMeV;
+
+    if (spectrum.Kind == "number_flux") {
+      const std::size_t dropped = ConvertNumberFluxToOccupation(
+          &traj.NuEnergiesMeV, &traj.NuSpectra);
+      if (dropped > 0)
+        printf("Dropping the E = 0 bin, which n(E) = E^2 f(E) cannot invert\n");
+    }
+
+    printf("Neutrino spectra: %zu energy bins, %.3g to %.3g MeV, kind %s\n",
+        traj.NuEnergiesMeV.size(), traj.NuEnergiesMeV.front(),
+        traj.NuEnergiesMeV.back(), spectrum.Kind.c_str());
+  }
 
   // Re-zero the time axis so the network evolves from t=0. The file's time is
   // post-bounce (t0 = t_launch); re-zeroing also keeps the first dt above the ulp
@@ -260,8 +290,20 @@ int main(int argc, char** argv) {
       traj.Rho.erase(traj.Rho.begin(), traj.Rho.begin() + i0);
       traj.Radius.erase(traj.Radius.begin(), traj.Radius.begin() + i0);
       traj.Vel.erase(traj.Vel.begin(), traj.Vel.begin() + i0);
+      if (!traj.NuSpectra.empty())
+        traj.NuSpectra.erase(traj.NuSpectra.begin(),
+            traj.NuSpectra.begin() + i0);
     }
   }
+
+  // The GR blueshift rescales the neutrino energy scale per radius, which a
+  // single tabulated energy grid can't represent; a tabulated run is therefore
+  // frame-fixed and reproduces the (T, eta) path only against a --no-gr
+  // reference.
+  if (!traj.NuSpectra.empty() && args.UseGR)
+    throw std::invalid_argument("A tabulated spectrum is used on a fixed energy "
+        "grid that cannot carry the per-radius GR blueshift; pass --no-gr (the "
+        "spectrum is already in the frame it was tabulated in)");
 
   printf("Trajectory: %s  Ye=%.4f  N=%zu  t=[%.3e, %.3e] s  T0=%.3f MeV\n",
       args.TrajFile.c_str(), traj.Ye,
@@ -431,12 +473,28 @@ int main(int argc, char** argv) {
     lums[i][1] = lNuebar;
   }
 
-  // interpLogSpace=false: etas can be 0, making log-space impossible
-  auto nuHist = NeutrinoHistoryBlackBody::CreateTimeDependent(
-      nuTimes, nuRadii, nuSpecies, T9s, etas, lums, /*interpLogSpace=*/false);
-  nuHist.PointSource(true);
+  std::shared_ptr<NeutrinoHistory> nuHistPtr;
 
-  net.LoadNeutrinoHistory(nuHist.MakeSharedPtr());
+  if (traj.NuSpectra.empty()) {
+    // interpLogSpace=false: etas can be 0, making log-space impossible
+    auto nuHist = NeutrinoHistoryBlackBody::CreateTimeDependent(
+        nuTimes, nuRadii, nuSpecies, T9s, etas, lums, /*interpLogSpace=*/false);
+    nuHist.PointSource(true);
+    nuHistPtr = nuHist.MakeSharedPtr();
+  } else {
+    // the tail carries the last tabulated shape; only L(t) and r(t) evolve
+    // past the end of the tracer
+    auto spectra = traj.NuSpectra;
+    spectra.resize(Nnu, traj.NuSpectra.back());
+
+    auto nuHist = NeutrinoHistoryTabulated::CreateTimeDependent(
+        nuTimes, nuRadii, nuSpecies, traj.NuEnergiesMeV, spectra, lums,
+        /*interpLogSpace=*/false);
+    nuHist.PointSource(true);
+    nuHistPtr = nuHist.MakeSharedPtr();
+  }
+
+  net.LoadNeutrinoHistory(nuHistPtr);
 
   auto hist = TemperatureDensityHistory::CreateFromValues(
       traj.Ye,

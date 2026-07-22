@@ -29,6 +29,9 @@
 #include "EquationsOfState/NeutrinoHistory.hpp"
 #include "EquationsOfState/NeutrinoHistoryFermiDirac.hpp"
 #include "EquationsOfState/NeutrinoHistoryBlackBody.hpp"
+#include "EquationsOfState/TabulatedNeutrinoSpectrum.hpp"
+#include "EquationsOfState/NeutrinoDistributionTabulated.hpp"
+#include "EquationsOfState/NeutrinoHistoryTabulated.hpp"
 #include "Utilities/FunctionVsTime.hpp"
 
 // the SWIG code generates a -Wmaybe-uninitialized warning, so turn it off
@@ -40,6 +43,8 @@
 %template(std_vector_int) std::vector<int>;
 %template(std_vector_double) std::vector<double>;
 %template(std_vector_std_vector_double) std::vector<std::vector<double>>;
+%template(std_vector_std_vector_std_vector_double)
+    std::vector<std::vector<std::vector<double>>>;
 %template(std_vector_std_string) std::vector<std::string>;
 %template(std_vector_const_ReactionLibraryBase_ptr)
     std::vector<const ReactionLibraryBase *>;
@@ -75,12 +80,14 @@
 %shared_ptr(NeutrinoDistribution)
 %shared_ptr(DummyNeutrinoDistribution)
 %shared_ptr(NeutrinoDistributionFermiDirac)
+%shared_ptr(NeutrinoDistributionTabulated)
 
 %shared_ptr(FunctionVsTime<std::shared_ptr<NeutrinoDistribution>>)
 %shared_ptr(NeutrinoHistory)
 %shared_ptr(DummyNeutrinoHistory)
 %shared_ptr(NeutrinoHistoryFermiDirac)
 %shared_ptr(NeutrinoHistoryBlackBody)
+%shared_ptr(NeutrinoHistoryTabulated)
 
 %{
 // re-enable warnings
@@ -119,6 +126,8 @@
 %include "EquationsOfState/NeutrinoHistory.i"
 %include "EquationsOfState/NeutrinoHistoryFermiDirac.i"
 %include "EquationsOfState/NeutrinoHistoryBlackBody.i"
+%include "EquationsOfState/NeutrinoDistributionTabulated.i"
+%include "EquationsOfState/NeutrinoHistoryTabulated.i"
 
 %include "MovieMaker/ColorScale.i"
 %include "MovieMaker/ColorScales.i"
