@@ -74,19 +74,11 @@ std::pair<T, T> InterpolatorBase<T>::ValueAndFirstDeriv(
         "than the maximum known time (" + std::to_string(time) + " > "
         + std::to_string(MaxTime()) + ").");
 
-  if (time == mTimes[0])
-    return Interpolate(time, 0);
+  auto upper = std::upper_bound(mTimes.begin(), mTimes.end(), time);
+  auto idx = std::distance(mTimes.begin(), upper) - 1;
 
-  for (unsigned int i = 1; i < mTimes.size() - 1; ++i) {
-    if (time == mTimes[i])
-      return Interpolate(time, i);
-
-    // TODO make this a bisection
-    if (mTimes[i] > time)
-      return Interpolate(time, i - 1);
-  }
-
-  return Interpolate(time, mTimes.size() - 2);
+  return Interpolate(time, std::min(idx,
+      (decltype(idx))(mTimes.size() - 2)));
 }
 
 template<typename T>
