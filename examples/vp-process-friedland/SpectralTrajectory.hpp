@@ -19,14 +19,24 @@
 // one column per energy bin (nu_e first, then nu_e-bar), announced by header
 // keys:
 //
-//   # SPECTRUM_ENERGY_GRID_MEV: 0 0.25 ... 100
+//   # SPECTRUM_GRID: nbins=400 width=0.25
 //   # SPECTRUM_SPECIES: NuE AntiNuE
 //   # SPECTRUM_KIND: occupation | number_flux
 //
-// Only the shape matters; the scale is set by the L(t) the driver builds, the
-// same one the (T, eta) path uses.
+// The grid is uniform: nbins intervals of `width` MeV starting at 0, sampled at
+// the nbins+1 edges 0, width, ..., nbins*width (one column per edge, shared by
+// both species). Only the shape matters; the scale is set by the L(t) the
+// driver builds, the same one the (T, eta) path uses.
+//
+// A grid replaces the analytic pinched Fermi-Dirac shape outright, so whatever
+// (T, eta) the driver would otherwise use goes unread. The grid is also
+// frame-fixed -- nothing downstream can rescale it per radius -- so a GR
+// blueshift has to be baked into the file, spectra and L alike, rather than
+// applied on the way in.
 struct SpectrumHeader {
   std::vector<double> EnergiesMeV;
+  int NBins = 0;
+  double Width = 0.0;
   std::string Kind = "occupation";
   bool Present = false;
 };
@@ -50,11 +60,29 @@ inline void ParseSpectrumHeaderLine(const std::string& line,
     SpectrumHeader * const pHeader) {
   std::vector<std::string> tokens;
 
-  if (ParseHeaderKey(line, "SPECTRUM_ENERGY_GRID_MEV", &tokens)) {
+  if (ParseHeaderKey(line, "SPECTRUM_GRID", &tokens)) {
+    int nbins = 0;
+    double width = 0.0;
+    for (const auto& t : tokens) {
+      const auto eq = t.find('=');
+      if (eq == std::string::npos)
+        throw std::runtime_error("SPECTRUM_GRID tokens are key=value, got " + t);
+      const std::string key = t.substr(0, eq), val = t.substr(eq + 1);
+      if (key == "nbins") nbins = std::stoi(val);
+      else if (key == "width") width = std::stod(val);
+      else throw std::runtime_error("SPECTRUM_GRID: unknown key " + key);
+    }
+    if (nbins <= 0)
+      throw std::runtime_error("SPECTRUM_GRID needs a positive nbins");
+    if (!(width > 0.0))
+      throw std::runtime_error("SPECTRUM_GRID needs a positive width");
+
     pHeader->Present = true;
+    pHeader->NBins = nbins;
+    pHeader->Width = width;
     pHeader->EnergiesMeV.clear();
-    for (const auto& t : tokens)
-      pHeader->EnergiesMeV.push_back(std::stod(t));
+    for (int k = 0; k <= nbins; ++k)
+      pHeader->EnergiesMeV.push_back(k * width);
   } else if (ParseHeaderKey(line, "SPECTRUM_KIND", &tokens)) {
     if (tokens.size() != 1)
       throw std::runtime_error("SPECTRUM_KIND takes a single value");

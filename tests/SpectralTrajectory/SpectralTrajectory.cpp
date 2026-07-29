@@ -48,14 +48,23 @@ SpectrumHeader ParseHeaderBlock(const std::string& text) {
 
 void TestHeaderParsing() {
   auto header = ParseHeaderBlock(
-      "# SPECTRUM_ENERGY_GRID_MEV: 0 0.5 1 1.5\n"
+      "# SPECTRUM_GRID: nbins=3 width=0.5\n"
       "# SPECTRUM_SPECIES: NuE AntiNuE\n"
       "# SPECTRUM_KIND: number_flux\n");
 
-  Check(header.Present, "energy grid key marks the header present");
-  Check(header.EnergiesMeV.size() == 4, "energy grid is read");
-  Check(header.EnergiesMeV[2] == 1.0, "energy grid values are read");
+  Check(header.Present, "grid key marks the header present");
+  Check(header.NBins == 3 && header.Width == 0.5, "nbins and width are read");
+  // nbins intervals -> nbins+1 edges at 0, width, ..., nbins*width
+  Check(header.EnergiesMeV.size() == 4, "grid expands to nbins+1 edges");
+  Check(header.EnergiesMeV[2] == 1.0, "grid edges are k*width");
+  Check(header.EnergiesMeV.back() == 1.5, "grid ends at nbins*width");
   Check(header.Kind == "number_flux", "kind is read");
+
+  // key order doesn't matter
+  auto swapped = ParseHeaderBlock("# SPECTRUM_GRID: width=0.25 nbins=400\n");
+  Check(swapped.NBins == 400 && swapped.Width == 0.25,
+      "nbins and width parse in either order");
+  Check(swapped.EnergiesMeV.back() == 100.0, "400 x 0.25 reaches 100 MeV");
 
   // a file without the grid key is a legacy 18-column trajectory
   auto legacy = ParseHeaderBlock("# just a comment\n# another\n");
@@ -81,6 +90,14 @@ void TestHeaderRejection() {
   rejects("# SPECTRUM_SPECIES: NuE NuMu",
       "a non electron-flavor SPECTRUM_SPECIES is rejected");
   rejects("# SPECTRUM_SPECIES: NuE", "a single-species header is rejected");
+  rejects("# SPECTRUM_GRID: nbins=400 0.25",
+      "a SPECTRUM_GRID token without key=value is rejected");
+  rejects("# SPECTRUM_GRID: nbins=400 step=0.25",
+      "an unknown SPECTRUM_GRID key is rejected");
+  rejects("# SPECTRUM_GRID: width=0.25", "a grid with no nbins is rejected");
+  rejects("# SPECTRUM_GRID: nbins=400", "a grid with no width is rejected");
+  rejects("# SPECTRUM_GRID: nbins=0 width=0.25",
+      "a grid with non-positive nbins is rejected");
 }
 
 void TestRowReading() {
