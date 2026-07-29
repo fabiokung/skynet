@@ -24,6 +24,12 @@ struct ConstantsStruct {
   // pi
   static constexpr double Pi = 3.1415926535897932385;
 
+  // solar mass in g
+  static constexpr double Msolcgs = 1.988435E33;
+
+  // Newton's gravitational constant in cgs units (cm^3/g/s^2)
+  static constexpr double GNcgs = 6.674E-8;
+
   // erg per MeV http://physics.nist.gov/cgi-bin/cuu/Value?tevj
   static constexpr double ErgPerMeV = 1.602176565E-6;
 
